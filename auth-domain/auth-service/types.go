@@ -3,8 +3,8 @@ package authservice
 import (
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 // Database Model
@@ -20,6 +20,14 @@ type Credential struct {
 type AuthRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=6"`
+}
+
+// Response DTOs
+type UserResponse struct {
+	UserID    uuid.UUID  `json:"user_id"`
+	Email     string     `json:"email"`
+	CreatedAt time.Time  `json:"created_at"`
+	LastLogin *time.Time `json:"last_login,omitempty"`
 }
 
 // JWT Claims

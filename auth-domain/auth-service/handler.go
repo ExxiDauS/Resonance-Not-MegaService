@@ -2,6 +2,7 @@ package authservice
 
 import (
 	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,31 +17,50 @@ func NewHandler(s *Service) *Handler {
 func (h *Handler) Register(c *gin.Context) {
 	var req AuthRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Invalid request payload",
+		})
 		return
 	}
 
-	userID, err := h.service.Register(req.Email, req.Password)
+	user, err := h.service.Register(req.Email, req.Password)
 	if err != nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "User already exists"})
+		c.JSON(http.StatusConflict, gin.H{
+			"success": false,
+			"message": "Email already in use",
+		})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"user_id": userID})
+	c.JSON(http.StatusCreated, gin.H{
+		"success": true,
+		"user":    user,
+	})
 }
 
 func (h *Handler) Login(c *gin.Context) {
 	var req AuthRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Invalid request payload",
+		})
 		return
 	}
 
 	token, err := h.service.Login(req.Email, req.Password)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"message": "Invalid email or password",
+		})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	c.SetCookie("auth_token", token, 3600, "/", "", false, true)
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Login successful",
+	})
 }
