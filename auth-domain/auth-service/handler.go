@@ -28,7 +28,7 @@ func (h *Handler) Register(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{
 			"success": false,
-			"message": "Email already in use",
+			"message": "Email already in use or registration failed: " + err.Error(),
 		})
 		return
 	}
@@ -53,14 +53,32 @@ func (h *Handler) Login(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"success": false,
-			"message": "Invalid email or password",
+			"message": "Invalid email or password: " + err.Error(),
 		})
 		return
 	}
 
-	c.SetCookie("auth_token", token, 3600, "/", "", false, true)
+	c.SetCookie("auth_token", token, 3600, "/", "", false, true) // secure=false for development, set to true in production
+	c.SetSameSite(http.SameSiteLaxMode)
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "Login successful",
+	})
+}
+
+func (h *Handler) Logout(c *gin.Context) {
+	cookie, err := c.Cookie("auth_token")
+	if err != nil || cookie == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "No auth token found",
+		})
+		return
+	}
+	// Clear the auth cookie by setting MaxAge to -1
+	c.SetCookie("auth_token", "", -1, "/", "", false, true)
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Logout successful",
 	})
 }

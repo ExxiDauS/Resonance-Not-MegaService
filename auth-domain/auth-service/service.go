@@ -19,7 +19,11 @@ func NewService(repo *Repository, secret string) *Service {
 }
 
 func (s *Service) Register(email, password string) (*UserResponse, error) {
-	hashed, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+
+	if err != nil {
+		return nil, err
+	}
 
 	user := &Credential{
 		UserID:       uuid.New(),
