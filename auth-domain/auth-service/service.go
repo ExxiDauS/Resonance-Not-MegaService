@@ -2,6 +2,7 @@ package authservice
 
 import (
 	"errors"
+	"log"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -66,6 +67,10 @@ func (s *Service) Login(email, password string) (string, error) {
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	s.repo.UpdateLastLogin(user) // Fire and forget update
+	// Update last login time (non-critical, log if fails)
+	if err := s.repo.UpdateLastLogin(user); err != nil {
+		log.Printf("Failed to update last login for user %s: %v", user.UserID, err)
+	}
+
 	return token.SignedString(s.jwtKey)
 }

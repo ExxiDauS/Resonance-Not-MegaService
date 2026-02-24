@@ -1,6 +1,7 @@
 package authservice
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -26,9 +27,10 @@ func (h *Handler) Register(c *gin.Context) {
 
 	user, err := h.service.Register(req.Email, req.Password)
 	if err != nil {
+		log.Printf("Registration failed for email %s: %v", req.Email, err)
 		c.JSON(http.StatusConflict, gin.H{
 			"success": false,
-			"message": "Email already in use or registration failed: " + err.Error(),
+			"message": "Registration failed. Email may already be in use.",
 		})
 		return
 	}
@@ -51,9 +53,10 @@ func (h *Handler) Login(c *gin.Context) {
 
 	token, err := h.service.Login(req.Email, req.Password)
 	if err != nil {
+		log.Printf("Login failed for email %s: %v", req.Email, err)
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"success": false,
-			"message": "Invalid email or password: " + err.Error(),
+			"message": "Invalid email or password.",
 		})
 		return
 	}
@@ -67,15 +70,7 @@ func (h *Handler) Login(c *gin.Context) {
 }
 
 func (h *Handler) Logout(c *gin.Context) {
-	cookie, err := c.Cookie("auth_token")
-	if err != nil || cookie == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"message": "No auth token found",
-		})
-		return
-	}
-	// Clear the auth cookie by setting MaxAge to -1
+	// Clear the auth cookie by setting MaxAge to -1, Idempotent operation
 	c.SetCookie("auth_token", "", -1, "/", "", false, true)
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
