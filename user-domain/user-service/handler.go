@@ -75,6 +75,16 @@ func (h *Handler) GetUserProfileByID(c *gin.Context) {
 
 func (h *Handler) UpdateUserProfile(c *gin.Context) {
 	userID := c.Param("id")
+	authenticatedUserID := c.GetString("user_id") // From JWT
+
+	// Only allow users to update their own profile
+	if userID != authenticatedUserID {
+		c.JSON(403, gin.H{
+			"success": false,
+			"message": "You can only update your own profile",
+		})
+		return
+	}
 
 	// Parse the request body into a map to allow partial updates
 	var updates *UpdateProfileInput
@@ -111,9 +121,18 @@ func (h *Handler) UpdateUserProfile(c *gin.Context) {
 
 func (h *Handler) DeleteUserProfile(c *gin.Context) {
 	userID := c.Param("id")
+	authenticatedUserID := c.GetString("user_id") // From JWT
+
+	// Only allow users to update their own profile
+	if userID != authenticatedUserID {
+		c.JSON(403, gin.H{
+			"success": false,
+			"message": "You can only update your own profile",
+		})
+		return
+	}
 
 	if err := h.service.DeleteUserProfile(userID); err != nil {
-
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(404, gin.H{
 				"success": false,
