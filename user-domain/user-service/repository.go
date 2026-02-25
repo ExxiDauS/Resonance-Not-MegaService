@@ -32,16 +32,22 @@ func (r *Repository) GetUserProfileByID(userID uuid.UUID) (*Profile, error) {
 	return &profile, err
 }
 
-func (r *Repository) UpdateUserProfile(userID uuid.UUID, updates *UpdateProfileInput) error {
+func (r *Repository) UpdateUserProfile(userID uuid.UUID, updates *UpdateProfileInput) (*Profile, error) {
 	result := r.db.Model(&Profile{}).Where("user_id = ?", userID).Updates(updates)
 
 	if result.Error != nil {
-		return result.Error
+		return nil, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
+		return nil, gorm.ErrRecordNotFound
 	}
-	return nil
+
+	// Fetch and return the updated profile
+	var profile Profile
+	if err := r.db.Where("user_id = ?", userID).First(&profile).Error; err != nil {
+		return nil, err
+	}
+	return &profile, nil
 }
 
 func (r *Repository) DeleteUserProfile(userID uuid.UUID) error {

@@ -96,8 +96,17 @@ func (h *Handler) UpdateUserProfile(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.UpdateUserProfile(userID, updates); err != nil {
+	// Validate that at least one field is provided
+	if updates.Email == nil && updates.DisplayName == nil && updates.Bio == nil && updates.AvatarURL == nil {
+		c.JSON(400, gin.H{
+			"success": false,
+			"message": "At least one field must be provided for update",
+		})
+		return
+	}
 
+	updatedProfile, err := h.service.UpdateUserProfile(userID, updates)
+	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(404, gin.H{
 				"success": false,
@@ -116,6 +125,7 @@ func (h *Handler) UpdateUserProfile(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"success": true,
 		"message": "User profile updated successfully",
+		"profile": updatedProfile,
 	})
 }
 

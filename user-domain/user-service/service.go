@@ -28,10 +28,10 @@ func (s *Service) GetUserProfileByID(userID string) (*Profile, error) {
 	return s.repo.GetUserProfileByID(userID_UUID)
 }
 
-func (s *Service) UpdateUserProfile(userID string, updates *UpdateProfileInput) error {
+func (s *Service) UpdateUserProfile(userID string, updates *UpdateProfileInput) (*Profile, error) {
 	userID_UUID, err := uuid.Parse(userID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	return s.repo.UpdateUserProfile(userID_UUID, updates)
 }
