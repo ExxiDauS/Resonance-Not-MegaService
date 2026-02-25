@@ -4,6 +4,8 @@ import (
 	authservice "auth-domain/auth-service"
 	"auth-domain/configs"
 	database "auth-domain/infrastructures/databases"
+	"auth-domain/infrastructures/messaging"
+	"log"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -21,13 +23,25 @@ func main() {
 		panic("Failed to migrate database: " + err.Error())
 	}
 
+	// Initialize RabbitMQ publisher
+	rabbitMQConfig, err := configs.LoadRabbitMQConfig()
+	if err != nil {
+		panic("Failed to load RabbitMQ configuration: " + err.Error())
+	}
+
+	publisher, err := messaging.NewRabbitMQPublisher(rabbitMQConfig.URL)
+	if err != nil {
+		panic("Failed to initialize RabbitMQ publisher: " + err.Error())
+	}
+	defer publisher.Close()
+
 	jwtSecret, err := configs.LoadJWTSecret()
 	if err != nil {
 		panic("Failed to load JWT secret: " + err.Error())
 	}
 
 	repo := authservice.NewRepository(dbClient)
-	service := authservice.NewService(repo, jwtSecret)
+	service := authservice.NewService(repo, jwtSecret, publisher)
 	handler := authservice.NewHandler(service)
 
 	port, err := configs.LoadPort()
@@ -50,5 +64,7 @@ func main() {
 	r.POST("/register", handler.Register)
 	r.POST("/login", handler.Login)
 	r.POST("/logout", handler.Logout)
+
+	log.Printf("Auth service starting on port %s", port)
 	r.Run(port)
 }

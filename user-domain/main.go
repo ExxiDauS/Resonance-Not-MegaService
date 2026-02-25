@@ -2,8 +2,10 @@ package main
 
 import (
 	database "user-domain/infrastructures/databases"
+	"user-domain/infrastructures/messaging"
 	userservice "user-domain/user-service"
 
+	"log"
 	"time"
 	"user-domain/configs"
 	"user-domain/middleware"
@@ -27,6 +29,23 @@ func main() {
 	repo := userservice.NewRepository(dbClient)
 	service := userservice.NewService(repo)
 	handler := userservice.NewHandler(service)
+
+	// Initialize RabbitMQ consumer
+	rabbitMQConfig, err := configs.LoadRabbitMQConfig()
+	if err != nil {
+		panic("Failed to load RabbitMQ configuration: " + err.Error())
+	}
+
+	consumer, err := messaging.NewRabbitMQConsumer(rabbitMQConfig.URL, service)
+	if err != nil {
+		panic("Failed to initialize RabbitMQ consumer: " + err.Error())
+	}
+	defer consumer.Close()
+
+	// Start consuming messages
+	if err := consumer.StartConsuming(); err != nil {
+		panic("Failed to start RabbitMQ consumer: " + err.Error())
+	}
 
 	port, err := configs.LoadPort()
 	if err != nil {
@@ -59,5 +78,7 @@ func main() {
 	protected.PUT("/profiles/:id", handler.UpdateUserProfile)
 	protected.DELETE("/profiles/:id", handler.DeleteUserProfile)
 
+	log.Printf("User service starting on port %s", port)
+	log.Printf("RabbitMQ consumer is running and waiting for messages...")
 	r.Run(port)
 }

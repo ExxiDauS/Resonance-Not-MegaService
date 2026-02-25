@@ -18,8 +18,9 @@ type Credential struct {
 
 // Request DTOs
 type AuthRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=6"`
+	Email       string `json:"email" binding:"required,email"`
+	Password    string `json:"password" binding:"required,min=6"`
+	DisplayName string `json:"display_name" binding:"required,min=1"`
 }
 
 // Response DTOs

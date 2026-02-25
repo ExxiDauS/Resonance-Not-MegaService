@@ -25,7 +25,7 @@ func (h *Handler) Register(c *gin.Context) {
 		return
 	}
 
-	user, err := h.service.Register(req.Email, req.Password)
+	user, err := h.service.Register(req.Email, req.Password, req.DisplayName)
 	if err != nil {
 		log.Printf("Registration failed for email %s: %v", req.Email, err)
 		c.JSON(http.StatusConflict, gin.H{
