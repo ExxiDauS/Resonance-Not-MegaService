@@ -2,8 +2,8 @@ package main
 
 import (
 	authservice "auth-domain/auth-service"
-	database "auth-domain/infrastructures/databases"
 	"auth-domain/configs"
+	database "auth-domain/infrastructures/databases"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -17,7 +17,9 @@ func main() {
 		panic("Failed to initialize database client: " + err.Error())
 	}
 
-	dbClient.AutoMigrate(&authservice.Credential{})
+	if err := dbClient.AutoMigrate(&authservice.Credential{}); err != nil {
+		panic("Failed to migrate database: " + err.Error())
+	}
 
 	jwtSecret, err := configs.LoadJWTSecret()
 	if err != nil {
