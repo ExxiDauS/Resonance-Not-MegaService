@@ -97,7 +97,7 @@ func (h *Handler) UpdateUserProfile(c *gin.Context) {
 	}
 
 	// Validate that at least one field is provided
-	if updates.Email == nil && updates.DisplayName == nil && updates.Bio == nil && updates.AvatarURL == nil {
+	if updates.DisplayName == nil && updates.Bio == nil && updates.AvatarURL == nil {
 		c.JSON(400, gin.H{
 			"success": false,
 			"message": "At least one field must be provided for update",
