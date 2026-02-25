@@ -75,7 +75,7 @@ func main() {
 	protected.POST("/profiles", handler.CreateUserProfile)
 	protected.GET("/profiles", handler.GetAllUserProfiles)
 	protected.GET("/profiles/:id", handler.GetUserProfileByID)
-	protected.PUT("/profiles/:id", handler.UpdateUserProfile)
+	protected.PATCH("/profiles/:id", handler.UpdateUserProfile)
 	protected.DELETE("/profiles/:id", handler.DeleteUserProfile)
 
 	log.Printf("User service starting on port %s", port)
