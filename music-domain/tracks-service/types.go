@@ -15,25 +15,33 @@ type Pagination struct {
 	HasPreviousPage bool `json:"has_previous_page"`
 }
 
+type ErrorResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+}
+
 type Track struct {
 	ID        spotify.ID `gorm:"primaryKey"`
 	Name      string     `gorm:"not null"`
 	ImageURL  string     `gorm:"not null"`
 	Artist    string     `gorm:"not null"`
-	Genre     []string   `gorm:"not null"`
+	Genre     string     `gorm:"not null"`
 	Duration  string     `gorm:"not null"`
-	AudioURL  string     `gorm:"not null"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
 type TrackResponse struct {
-	ID         spotify.ID `json:"id"`
-	Name       string     `json:"name"`
-	ImageURL   string     `json:"image_url"`
-	Artist     string     `json:"artist"`
-	Genre      []string   `json:"genre"`
-	Duration   string     `json:"duration"`
-	AudioURL   string     `json:"audio_url"`
-	Pagination Pagination `json:"pagination"`
+	ID       spotify.ID `json:"id"`
+	Name     string     `json:"name"`
+	ImageURL string     `json:"image_url"`
+	Artist   string     `json:"artist"`
+	Genre    string     `json:"genre"`
+	Duration string     `json:"duration"`
+	AudioURL string     `json:"audio_url"`
+}
+
+type AllTracksResponse struct {
+	Tracks     []TrackResponse `json:"tracks"`
+	Pagination Pagination      `json:"pagination"`
 }
