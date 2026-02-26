@@ -99,6 +99,38 @@ func (s *Service) getRandomTrackFromSpotify(ctx context.Context) ([]TrackRespons
 			Duration: "0:00",
 			AudioURL: "placeholder",
 		})
+
+		err := s.repo.CreateTrack(&Track{
+			ID:       item.ID,
+			Name:     item.Name,
+			Artist:   artists,
+			ImageURL: item.Album.Images[0].URL,
+			Genre:    genres,
+			Duration: "0:00",
+		})
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to create track in repo: %w", err)
+		}
 	}
 	return tracks, nil
+}
+
+func (s *Service) GetTrackByID(ctx context.Context, id string) (*TrackResponse, error) {
+	track, err := s.repo.GetTrackByID(id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get track by ID: %w", err)
+	}
+	if track == nil {
+		return nil, fmt.Errorf("track not found")
+	}
+	return &TrackResponse{
+		ID:       track.ID,
+		Name:     track.Name,
+		Artist:   track.Artist,
+		ImageURL: track.ImageURL,
+		Genre:    track.Genre,
+		Duration: track.Duration,
+		AudioURL: "placeholder",
+	}, nil
 }

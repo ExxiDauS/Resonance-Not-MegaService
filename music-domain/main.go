@@ -34,6 +34,7 @@ func main() {
 
 	r := gin.Default()
 	r.GET("/tracks/random", trackHandler.GetRandomTracks)
+	r.GET("/tracks/:id", trackHandler.GetTrackByID)
 
 	r.Run(":" + cfg.Port)
 }
