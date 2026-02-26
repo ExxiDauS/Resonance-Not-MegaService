@@ -33,6 +33,7 @@ func main() {
 	trackHandler := tracksservice.NewHandler(trackService)
 
 	r := gin.Default()
+	r.GET("/tracks", trackHandler.GetAllTracks)
 	r.GET("/tracks/random", trackHandler.GetRandomTracks)
 	r.GET("/tracks/:id", trackHandler.GetTrackByID)
 

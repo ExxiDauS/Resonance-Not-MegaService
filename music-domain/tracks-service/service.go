@@ -116,6 +116,29 @@ func (s *Service) getRandomTrackFromSpotify(ctx context.Context) ([]TrackRespons
 	return tracks, nil
 }
 
+func (s *Service) GetAllTracks(ctx context.Context, page int, limit int, name *string, genre *string, artists *string) (*AllTracksResponse, error) {
+	tracks, pagination, err := s.repo.GetAllTracks(page, limit, name, genre, artists)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get tracks: %w", err)
+	}
+	var trackResponses []TrackResponse
+	for _, track := range tracks {
+		trackResponses = append(trackResponses, TrackResponse{
+			ID:       track.ID,
+			Name:     track.Name,
+			Artist:   track.Artist,
+			ImageURL: track.ImageURL,
+			Genre:    track.Genre,
+			Duration: track.Duration,
+			AudioURL: "placeholder",
+		})
+	}
+	return &AllTracksResponse{
+		Tracks:     trackResponses,
+		Pagination: pagination,
+	}, nil
+}
+
 func (s *Service) GetTrackByID(ctx context.Context, id string) (*TrackResponse, error) {
 	track, err := s.repo.GetTrackByID(id)
 	if err != nil {

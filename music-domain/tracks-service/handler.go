@@ -2,6 +2,7 @@ package tracksservice
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -35,4 +36,25 @@ func (h *Handler) GetTrackByID(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, track)
+}
+
+func parseInt(s string) int {
+	i, _ := strconv.Atoi(s)
+	return i
+}
+
+func (h *Handler) GetAllTracks(c *gin.Context) {
+	page := c.DefaultQuery("page", "1")
+	limit := c.DefaultQuery("limit", "10")
+	name := c.Query("name")
+	genre := c.Query("genre")
+	artists := c.Query("artists")
+	pageInt := parseInt(page)
+	limitInt := parseInt(limit)
+	allTracks, err := h.service.GetAllTracks(c.Request.Context(), pageInt, limitInt, &name, &genre, &artists)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, allTracks)
 }
