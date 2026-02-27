@@ -27,7 +27,6 @@ type Track struct {
 	ImageURL  string         `gorm:"not null"`
 	Artist    string         `gorm:"not null"`
 	Genre     string         `gorm:"not null"`
-	Duration  string         `gorm:"not null"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`

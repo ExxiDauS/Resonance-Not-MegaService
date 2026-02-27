@@ -109,7 +109,6 @@ func (s *Service) getRandomTrackFromSpotify(ctx context.Context) ([]Track, error
 			Artist:   artists,
 			ImageURL: item.Album.Images[0].URL,
 			Genre:    genres,
-			Duration: "",
 		}
 
 		err := s.repo.CreateTrack(&track)
@@ -135,7 +134,6 @@ func (s *Service) GetAllTracks(ctx context.Context, page int, limit int, name *s
 			Artist:   track.Artist,
 			ImageURL: track.ImageURL,
 			Genre:    track.Genre,
-			Duration: track.Duration,
 		})
 	}
 	return &AllTracksResponse{
