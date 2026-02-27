@@ -44,6 +44,6 @@ type TrackResponse struct {
 }
 
 type AllTracksResponse struct {
-	Tracks     []TrackResponse `json:"tracks"`
-	Pagination Pagination      `json:"pagination"`
+	Tracks     []Track    `json:"tracks"`
+	Pagination Pagination `json:"pagination"`
 }

@@ -8,19 +8,25 @@ import (
 	"github.com/zmb3/spotify/v2"
 )
 
+type AudioProvider interface {
+	GetPlayableURLByQuery(ctx context.Context, seacrQuery string) (string, error)
+}
+
 type Service struct {
 	repo          Repository
 	spotifyClient *spotify.Client
+	audioService  AudioProvider
 }
 
-func NewService(repo Repository, spotifyClient *spotify.Client) *Service {
+func NewService(repo Repository, spotifyClient *spotify.Client, audioService AudioProvider) *Service {
 	return &Service{
 		repo:          repo,
 		spotifyClient: spotifyClient,
+		audioService:  audioService,
 	}
 }
 
-func (s *Service) getRandomTrackFromSpotify(ctx context.Context) ([]TrackResponse, error) {
+func (s *Service) getRandomTrackFromSpotify(ctx context.Context) ([]Track, error) {
 
 	queries := []string{
 		// --- BY YEAR RANGE (Popular Eras) ---
@@ -64,7 +70,7 @@ func (s *Service) getRandomTrackFromSpotify(ctx context.Context) ([]TrackRespons
 		return nil, fmt.Errorf("spotify search failed: %w", err)
 	}
 
-	var tracks []TrackResponse
+	var tracks []Track
 
 	for _, item := range result.Tracks.Tracks {
 
@@ -90,14 +96,13 @@ func (s *Service) getRandomTrackFromSpotify(ctx context.Context) ([]TrackRespons
 			}
 		}
 
-		tracks = append(tracks, TrackResponse{
+		tracks = append(tracks, Track{
 			ID:       item.ID,
 			Name:     item.Name,
 			Artist:   artists,
 			ImageURL: item.Album.Images[0].URL,
 			Genre:    genres,
 			Duration: "0:00",
-			AudioURL: "placeholder",
 		})
 
 		err := s.repo.CreateTrack(&Track{
@@ -121,16 +126,15 @@ func (s *Service) GetAllTracks(ctx context.Context, page int, limit int, name *s
 	if err != nil {
 		return nil, fmt.Errorf("failed to get tracks: %w", err)
 	}
-	var trackResponses []TrackResponse
+	var trackResponses []Track
 	for _, track := range tracks {
-		trackResponses = append(trackResponses, TrackResponse{
+		trackResponses = append(trackResponses, Track{
 			ID:       track.ID,
 			Name:     track.Name,
 			Artist:   track.Artist,
 			ImageURL: track.ImageURL,
 			Genre:    track.Genre,
 			Duration: track.Duration,
-			AudioURL: "placeholder",
 		})
 	}
 	return &AllTracksResponse{
@@ -147,6 +151,10 @@ func (s *Service) GetTrackByID(ctx context.Context, id string) (*TrackResponse, 
 	if track == nil {
 		return nil, fmt.Errorf("track not found")
 	}
+	audioURL, err := s.audioService.GetPlayableURLByQuery(ctx, track.Name)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get audio URL: %w", err)
+	}
 	return &TrackResponse{
 		ID:       track.ID,
 		Name:     track.Name,
@@ -154,7 +162,7 @@ func (s *Service) GetTrackByID(ctx context.Context, id string) (*TrackResponse, 
 		ImageURL: track.ImageURL,
 		Genre:    track.Genre,
 		Duration: track.Duration,
-		AudioURL: "placeholder",
+		AudioURL: audioURL,
 	}, nil
 }
 
