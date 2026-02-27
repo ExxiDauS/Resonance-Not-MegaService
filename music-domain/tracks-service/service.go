@@ -157,3 +157,14 @@ func (s *Service) GetTrackByID(ctx context.Context, id string) (*TrackResponse, 
 		AudioURL: "placeholder",
 	}, nil
 }
+
+func (s *Service) DeleteTrackByID(ctx context.Context, id string) error {
+	_, err := s.repo.GetTrackByID(id)
+	if err != nil {
+		return fmt.Errorf("track not found: %w", err)
+	}
+	if err := s.repo.DeleteTrack(id); err != nil {
+		return fmt.Errorf("failed to delete track: %w", err)
+	}
+	return nil
+}

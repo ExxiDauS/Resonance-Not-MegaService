@@ -36,6 +36,7 @@ func main() {
 	r.GET("/tracks", trackHandler.GetAllTracks)
 	r.GET("/tracks/random", trackHandler.GetRandomTracks)
 	r.GET("/tracks/:id", trackHandler.GetTrackByID)
+	r.DELETE("tracks/:id", trackHandler.DeleteTrackByID)
 
 	r.Run(":" + cfg.Port)
 }

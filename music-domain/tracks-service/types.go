@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/zmb3/spotify/v2"
+	"gorm.io/gorm"
 )
 
 type Pagination struct {
@@ -29,6 +30,7 @@ type Track struct {
 	Duration  string     `gorm:"not null"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
 type TrackResponse struct {
