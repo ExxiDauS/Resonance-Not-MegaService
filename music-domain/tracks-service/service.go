@@ -9,7 +9,14 @@ import (
 )
 
 type AudioProvider interface {
-	GetPlayableURLByQuery(ctx context.Context, seacrQuery string) (string, error)
+	GetPlayableURLByQuery(ctx context.Context, seacrQuery string) (string, int, error)
+}
+
+func formatDuration(ms int) string {
+	totalSeconds := ms / 1000
+	minutes := totalSeconds / 60
+	seconds := totalSeconds % 60
+	return fmt.Sprintf("%d:%02d", minutes, seconds)
 }
 
 type Service struct {
@@ -96,27 +103,21 @@ func (s *Service) getRandomTrackFromSpotify(ctx context.Context) ([]Track, error
 			}
 		}
 
-		tracks = append(tracks, Track{
+		track := Track{
 			ID:       item.ID,
 			Name:     item.Name,
 			Artist:   artists,
 			ImageURL: item.Album.Images[0].URL,
 			Genre:    genres,
-			Duration: "0:00",
-		})
+			Duration: "",
+		}
 
-		err := s.repo.CreateTrack(&Track{
-			ID:       item.ID,
-			Name:     item.Name,
-			Artist:   artists,
-			ImageURL: item.Album.Images[0].URL,
-			Genre:    genres,
-			Duration: "0:00",
-		})
-
+		err := s.repo.CreateTrack(&track)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create track in repo: %w", err)
 		}
+
+		tracks = append(tracks, track)
 	}
 	return tracks, nil
 }
@@ -151,17 +152,18 @@ func (s *Service) GetTrackByID(ctx context.Context, id string) (*TrackResponse, 
 	if track == nil {
 		return nil, fmt.Errorf("track not found")
 	}
-	audioURL, err := s.audioService.GetPlayableURLByQuery(ctx, track.Name)
+	audioURL, durationMs, err := s.audioService.GetPlayableURLByQuery(ctx, track.Name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get audio URL: %w", err)
 	}
+	duration := formatDuration(durationMs)
 	return &TrackResponse{
 		ID:       track.ID,
 		Name:     track.Name,
 		Artist:   track.Artist,
 		ImageURL: track.ImageURL,
 		Genre:    track.Genre,
-		Duration: track.Duration,
+		Duration: duration,
 		AudioURL: audioURL,
 	}, nil
 }

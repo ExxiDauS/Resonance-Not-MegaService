@@ -19,6 +19,7 @@ type soundCloudTrack struct {
 	ID        int64  `json:"id"`
 	Title     string `json:"title"`
 	StreamURL string `json:"stream_url"`
+	Duration  int    `json:"duration"`
 }
 
 type soundCloudSearchResult struct {
@@ -31,26 +32,21 @@ func NewSoundCloudAudioRepo(client *http.Client) *soundCloudAudioRepo {
 }
 
 // 1. Search for the track and get the protected stream URL
-func (r *soundCloudAudioRepo) SearchTrackStreamURL(ctx context.Context, query string) (string, error) {
+func (r *soundCloudAudioRepo) SearchTrackStreamURL(ctx context.Context, query string) (string, int, error) {
 	endpoint := "https://api.soundcloud.com/tracks?q=" + url.QueryEscape(query) + "&limit=1&offset=0&linked_partitioning=true"
 
 	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	resp, err := r.client.Do(req)
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
 	defer resp.Body.Close()
-
-	log.Printf("SoundCloud API response status: %s", resp.Status)
 
 	// Read the raw body to log it exactly as it came from SoundCloud
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
-
-	// 1. LOG THE RAW BODY: Check your terminal for this to compare exactly with Postman
-	log.Printf("==== SOUNDCLOUD RAW RESPONSE ====\n%s\n=================================", string(body))
 
 	var result soundCloudSearchResult
 
@@ -66,14 +62,8 @@ func (r *soundCloudAudioRepo) SearchTrackStreamURL(ctx context.Context, query st
 		}
 	}
 
-	// 2. LOG THE PARSED COLLECTION: See what Go actually understood
-	log.Printf("Parsed Collection length: %d", len(result.Collection))
-	if len(result.Collection) > 0 {
-		log.Printf("First track parsed data: %+v", result.Collection[0])
-	}
-
 	if len(result.Collection) == 0 {
-		return "", errors.New("no tracks found on soundcloud for this query (or unmarshal completely failed)")
+		return "", 0, errors.New("no tracks found on soundcloud for this query (or unmarshal completely failed)")
 	}
 
 	// 3. Check if the track exists but lacks a stream URL
@@ -82,12 +72,10 @@ func (r *soundCloudAudioRepo) SearchTrackStreamURL(ctx context.Context, query st
 		var debugTrack interface{}
 		json.Unmarshal(body, &debugTrack)
 		log.Printf("Track is missing 'stream_url'. Full track JSON: %+v", debugTrack)
-		return "", errors.New("track found, but 'stream_url' is missing. The token might lack permissions or the track is not streamable")
+		return "", 0, errors.New("track found, but 'stream_url' is missing. The token might lack permissions or the track is not streamable")
 	}
 
-	log.Printf("Found SoundCloud stream URL: %s", result.Collection[0].StreamURL)
-
-	return result.Collection[0].StreamURL, nil
+	return result.Collection[0].StreamURL, result.Collection[0].Duration, nil
 }
 
 // 2. Intercept the Redirect to get the raw MP3 URL
