@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Resonance Chat Test</title>
+    <style>
+        body { font-family: sans-serif; max-width: 500px; margin: 40px auto; }
+        #chat-box { height: 400px; border: 1px solid #ccc; overflow-y: scroll; padding: 10px; margin-bottom: 10px; background: #f9f9f9; }
+        .message { margin-bottom: 8px; padding: 8px; border-radius: 4px; background: #e1f5fe; }
+        .system { color: #888; font-size: 0.9em; font-style: italic; }
+        input[type="text"] { width: 75%; padding: 10px; }
+        button { padding: 10px 15px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>Chat Room: <span id="room-name">test-room-1</span></h2>
+    <div id="chat-box"></div>
+    
+    <div style="display: flex; gap: 10px;">
+        <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+        // 1. Ask for a username when opening the file
+        const userId = prompt("Enter your User ID (e.g., userA, userB):") || "anonymous";
+        const roomId = "test-room-1";
+        const chatBox = document.getElementById('chat-box');
+        const messageInput = document.getElementById('message-input');
+
+        // 2. Connect to the Go WebSocket Server
+        const ws = new WebSocket(`ws://localhost:8081/ws/chat/${roomId}?user_id=${userId}`);
+
+        ws.onopen = () => {
+            appendSystemMessage(`Connected to ${roomId} as ${userId}`);
+        };
+
+        // 3. Listen for incoming messages (History & Real-time)
+        ws.onmessage = (event) => {
+            const msg = JSON.parse(event.data);
+            const isMe = msg.user_id === userId;
+            const prefix = isMe ? "<b>You:</b> " : `<b>${msg.user_id}:</b> `;
+            
+            const div = document.createElement('div');
+            div.className = 'message';
+            div.innerHTML = prefix + msg.content;
+            chatBox.appendChild(div);
+            
+            // Auto-scroll to bottom
+            chatBox.scrollTop = chatBox.scrollHeight;
+        };
+
+        ws.onclose = () => appendSystemMessage("Disconnected from server.");
+        ws.onerror = (err) => appendSystemMessage("WebSocket error occurred.");
+
+        // 4. Send a message to the server
+        function sendMessage() {
+            if (!messageInput.value) return;
+            
+            const payload = { content: messageInput.value };
+            ws.send(JSON.stringify(payload));
+            messageInput.value = '';
+        }
+
+        function appendSystemMessage(text) {
+            const div = document.createElement('div');
+            div.className = 'system';
+            div.innerText = text;
+            chatBox.appendChild(div);
+        }
+
+        // Allow pressing Enter to send
+        messageInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") sendMessage();
+        });
+    </script>
+</body>
+</html>
