@@ -35,12 +35,12 @@ func (r *repository) GetAllTracks(page int, limit int, name *string, genre *stri
 
 	// If genre is provided, exact match or partial match depending on your needs
 	if genre != nil && *genre != "" {
-		query = query.Where("LOWER(genre) = ?", strings.ToLower(*genre))
+		query = query.Where("LOWER(genre) LIKE ?", "%"+strings.ToLower(*genre)+"%")
 	}
 
 	// If artists is provided, search within the artist column
 	if artists != nil && *artists != "" {
-		query = query.Where("LOWER(artists) LIKE ?", "%"+strings.ToLower(*artists)+"%")
+		query = query.Where("LOWER(artist) LIKE ?", "%"+strings.ToLower(*artists)+"%")
 	}
 
 	// 3. Count total records (must be done after filters but before pagination)
