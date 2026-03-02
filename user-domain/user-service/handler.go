@@ -26,7 +26,7 @@ func (h *Handler) CreateUserProfile(c *gin.Context) {
 	}
 	if err := h.service.CreateUserProfile(&profile); err != nil {
 		if strings.Contains(err.Error(), "duplicate key") || strings.Contains(err.Error(), "unique constraint") {
-			c.JSON(409, gin.H{"success": false, "message": "Email already exists"})
+			c.JSON(409, gin.H{"success": false, "message": "User already exists"})
 		} else {
 			c.JSON(500, gin.H{"success": false, "message": "Failed to create user profile", "error": err.Error()})
 		}
