@@ -67,7 +67,7 @@ func (s *Service) getRandomTrackFromSpotify(ctx context.Context) ([]Track, error
 		// --- BY MOOD/STYLE (Using keywords with filters) ---
 		"mood:happy", "mood:sad", "mood:chill", "mood:workout",
 		"Christmas year:2023", "Halloween genre:rock",
-		"acoustic genre:pop", "remix genre:electronic",
+		"acoustic genre:pop",
 	}
 
 	query := queries[rand.Intn(len(queries))]
@@ -111,9 +111,9 @@ func (s *Service) getRandomTrackFromSpotify(ctx context.Context) ([]Track, error
 			Genre:    genres,
 		}
 
-		err := s.repo.CreateTrack(&track)
+		err := s.repo.UpsertTrack(&track)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create track in repo: %w", err)
+			return nil, fmt.Errorf("failed to upsert track in repo: %w", err)
 		}
 
 		tracks = append(tracks, track)

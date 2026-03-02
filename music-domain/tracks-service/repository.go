@@ -5,12 +5,14 @@ import (
 	"strings"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type Repository interface {
 	GetAllTracks(page int, limit int, name *string, genre *string, artists *string) ([]Track, Pagination, error)
 	GetTrackByID(id string) (*Track, error)
 	CreateTrack(track *Track) error
+	UpsertTrack(track *Track) error
 	UpdateTrack(track *Track) error
 	DeleteTrack(id string) error
 }
@@ -91,6 +93,12 @@ func (r *repository) GetTrackByID(id string) (*Track, error) {
 func (r *repository) CreateTrack(track *Track) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		return tx.Create(track).Error
+	})
+}
+
+func (r *repository) UpsertTrack(track *Track) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		return tx.Clauses(clause.OnConflict{UpdateAll: true}).Create(track).Error
 	})
 }
 
