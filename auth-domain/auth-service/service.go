@@ -1,6 +1,7 @@
 package authservice
 
 import (
+	"auth-domain/infrastructures/messaging"
 	"errors"
 	"log"
 	"time"
@@ -11,15 +12,20 @@ import (
 )
 
 type Service struct {
-	repo   *Repository
-	jwtKey []byte
+	repo      *Repository
+	jwtKey    []byte
+	publisher *messaging.RabbitMQPublisher
 }
 
-func NewService(repo *Repository, secret string) *Service {
-	return &Service{repo: repo, jwtKey: []byte(secret)}
+func NewService(repo *Repository, secret string, publisher *messaging.RabbitMQPublisher) *Service {
+	return &Service{
+		repo:      repo,
+		jwtKey:    []byte(secret),
+		publisher: publisher,
+	}
 }
 
-func (s *Service) Register(email, password string) (*UserResponse, error) {
+func (s *Service) Register(email, password, displayName string) (*UserResponse, error) {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 
 	if err != nil {
@@ -34,6 +40,13 @@ func (s *Service) Register(email, password string) (*UserResponse, error) {
 
 	if err := s.repo.CreateUser(user); err != nil {
 		return nil, err
+	}
+
+	// Publish message to RabbitMQ for user profile creation
+	if err := s.publisher.PublishUserCreated(user.UserID.String(), email, displayName); err != nil {
+		log.Printf("Failed to publish user created event for user %s: %v", user.UserID, err)
+		// Note: We don't fail the registration if message publishing fails
+		// The user account is already created in the database
 	}
 
 	// Return response DTO without password
