@@ -1,9 +1,9 @@
-package databases
+package database
 
 import (
 	"log"
 
-	"music-domain/configs"
+	"user-domain/configs"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
