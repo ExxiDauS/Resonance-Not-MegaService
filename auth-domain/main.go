@@ -2,8 +2,8 @@ package main
 
 import (
 	authservice "auth-domain/auth-service"
-	database "auth-domain/infrastructures/databases"
 	"auth-domain/configs"
+	database "auth-domain/infrastructures/databases"
 	"time"
 
 	"github.com/gin-contrib/cors"
