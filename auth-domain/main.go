@@ -4,6 +4,11 @@ import (
 	authservice "auth-domain/auth-service"
 	"auth-domain/configs"
 	database "auth-domain/infrastructures/databases"
+<<<<<<< HEAD
+=======
+	"auth-domain/infrastructures/messaging"
+	"log"
+>>>>>>> 3e95c3ee2f2d0c06c5398ceb0f7702a14c7de890
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -17,7 +22,21 @@ func main() {
 		panic("Failed to initialize database client: " + err.Error())
 	}
 
-	dbClient.AutoMigrate(&authservice.Credential{})
+	if err := dbClient.AutoMigrate(&authservice.Credential{}); err != nil {
+		panic("Failed to migrate database: " + err.Error())
+	}
+
+	// Initialize RabbitMQ publisher
+	rabbitMQConfig, err := configs.LoadRabbitMQConfig()
+	if err != nil {
+		panic("Failed to load RabbitMQ configuration: " + err.Error())
+	}
+
+	publisher, err := messaging.NewRabbitMQPublisher(rabbitMQConfig.URL)
+	if err != nil {
+		panic("Failed to initialize RabbitMQ publisher: " + err.Error())
+	}
+	defer publisher.Close()
 
 	jwtSecret, err := configs.LoadJWTSecret()
 	if err != nil {
@@ -25,7 +44,7 @@ func main() {
 	}
 
 	repo := authservice.NewRepository(dbClient)
-	service := authservice.NewService(repo, jwtSecret)
+	service := authservice.NewService(repo, jwtSecret, publisher)
 	handler := authservice.NewHandler(service)
 
 	port, err := configs.LoadPort()
@@ -48,5 +67,7 @@ func main() {
 	r.POST("/register", handler.Register)
 	r.POST("/login", handler.Login)
 	r.POST("/logout", handler.Logout)
+
+	log.Printf("Auth service starting on port %s", port)
 	r.Run(port)
 }

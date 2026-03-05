@@ -3,12 +3,13 @@ package interactionservice
 import (
 	"context"
 	"encoding/json"
+	"log"
 
 	"github.com/streadway/amqp"
 )
 
 type SwipeService interface {
-	GetRandomTrack(ctx context.Context) (*Track, error)
+	GetRandomTrack(ctx context.Context) (*TrackResponse, error)
 	Swipe(ctx context.Context, req *SwipeRequest) error
 }
 
@@ -30,7 +31,7 @@ func NewSwipeService(
 	}
 }
 
-func (s *swipeService) GetRandomTrack(ctx context.Context) (*Track, error) {
+func (s *swipeService) GetRandomTrack(ctx context.Context) (*TrackResponse, error) {
 	return s.trackClient.GetRandomTrack(ctx)
 }
 
@@ -45,9 +46,12 @@ func (s *swipeService) Swipe(ctx context.Context, req *SwipeRequest) error {
 		return err
 	}
 
-	body, _ := json.Marshal(swipe)
+	body, err := json.Marshal(swipe)
+	if err != nil {
+		return err
+	}
 
-	return s.rabbitConn.Publish(
+	err = s.rabbitConn.Publish(
 		"",
 		"swipe_queue",
 		false,
@@ -57,4 +61,10 @@ func (s *swipeService) Swipe(ctx context.Context, req *SwipeRequest) error {
 			Body:        body,
 		},
 	)
+
+	if err != nil {
+		log.Println("RabbitMQ publish error:", err)
+	}
+
+	return nil
 }

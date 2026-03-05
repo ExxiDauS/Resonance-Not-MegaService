@@ -16,7 +16,7 @@ func NewHandler(s *Service) *Handler {
 }
 
 func (h *Handler) Register(c *gin.Context) {
-	var req AuthRequest
+	var req RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
@@ -25,7 +25,7 @@ func (h *Handler) Register(c *gin.Context) {
 		return
 	}
 
-	user, err := h.service.Register(req.Email, req.Password)
+	user, err := h.service.Register(req.Email, req.Password, req.DisplayName)
 	if err != nil {
 		log.Printf("Registration failed for email %s: %v", req.Email, err)
 		c.JSON(http.StatusConflict, gin.H{
@@ -42,7 +42,7 @@ func (h *Handler) Register(c *gin.Context) {
 }
 
 func (h *Handler) Login(c *gin.Context) {
-	var req AuthRequest
+	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
@@ -66,6 +66,7 @@ func (h *Handler) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "Login successful",
+		"token":   token,
 	})
 }
 

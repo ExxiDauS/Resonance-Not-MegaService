@@ -3,12 +3,14 @@ package interactionservice
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"time"
 )
 
 type TrackClient interface {
-	GetRandomTrack(ctx context.Context) (*Track, error)
+	GetRandomTrack(ctx context.Context) (*TrackResponse, error)
 }
 
 type HTTPTrackClient struct {
@@ -25,11 +27,11 @@ func NewHTTPTrackClient(baseURL string) *HTTPTrackClient {
 	}
 }
 
-func (c *HTTPTrackClient) GetRandomTrack(ctx context.Context) (*Track, error) {
+func (c *HTTPTrackClient) GetRandomTrack(ctx context.Context) (*TrackResponse, error) {
 	req, err := http.NewRequestWithContext(
 		ctx,
 		"GET",
-		c.baseURL+"/random-track",
+		c.baseURL+"/tracks/random",
 		nil,
 	)
 	if err != nil {
@@ -42,10 +44,17 @@ func (c *HTTPTrackClient) GetRandomTrack(ctx context.Context) (*Track, error) {
 	}
 	defer resp.Body.Close()
 
-	var track Track
-	if err := json.NewDecoder(resp.Body).Decode(&track); err != nil {
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
 		return nil, err
 	}
 
-	return &track, nil
+	fmt.Println("Track service response:", string(bodyBytes))
+
+	var trackRes TrackResponse
+	if err := json.Unmarshal(bodyBytes, &trackRes); err != nil {
+		return nil, err
+	}
+
+	return &trackRes, nil
 }
