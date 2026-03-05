@@ -29,7 +29,7 @@
         const messageInput = document.getElementById('message-input');
 
         // 2. Connect to the Go WebSocket Server
-        const ws = new WebSocket(`ws://localhost:8081/ws/chat/${roomId}?user_id=${userId}`);
+        const ws = new WebSocket(`ws://localhost:8083/ws/chat/${roomId}?user_id=${userId}`);
 
         ws.onopen = () => {
             appendSystemMessage(`Connected to ${roomId} as ${userId}`);
@@ -38,6 +38,7 @@
         // 3. Listen for incoming messages (History & Real-time)
         ws.onmessage = (event) => {
             const msg = JSON.parse(event.data);
+            console.log("Received message:", msg);  
             const isMe = msg.user_id === userId;
             const prefix = isMe ? "<b>You:</b> " : `<b>${msg.user_id}:</b> `;
             

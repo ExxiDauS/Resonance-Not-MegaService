@@ -2,6 +2,7 @@ package main
 
 import (
 	chatservice "chat-domain/chat-service"
+	configs "chat-domain/configs"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -10,8 +11,16 @@ import (
 
 func main() {
 	// Initialize Redis
+	rdcfg, err := configs.LoadRedisConfig()
+
+	if err != nil {
+		panic(err)
+	}
+
 	rdb := redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr:     rdcfg.Address,
+		Username: rdcfg.Username,
+		Password: rdcfg.Password,
 	})
 
 	redisService := chatservice.NewRedisService(rdb)
@@ -25,5 +34,10 @@ func main() {
 	// Example: ws://localhost:8081/ws/chat/room123?user_id=userA
 	r.GET("/ws/chat/:room_id", handler.HandleConnections)
 
-	r.Run(":8081")
+	portcfg, err := configs.LoadPortConfig()
+	if err != nil {
+		panic(err)
+	}
+
+	r.Run(":" + portcfg.Port)
 }
