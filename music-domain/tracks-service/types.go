@@ -22,11 +22,11 @@ type ErrorResponse struct {
 }
 
 type Track struct {
-	ID        spotify.ID     `gorm:"primaryKey"`
-	Name      string         `gorm:"not null"`
-	ImageURL  string         `gorm:"not null"`
-	Artist    string         `gorm:"not null"`
-	Genre     string         `gorm:"not null"`
+	ID        spotify.ID     `gorm:"primaryKey" json:"id"`
+	Name      string         `gorm:"not null" json:"name"`
+	ImageURL  string         `gorm:"not null" json:"image_url"`
+	Artist    string         `gorm:"not null" json:"artist"`
+	Genre     string         `gorm:"not null" json:"genre"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
