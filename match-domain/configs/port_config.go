@@ -1,25 +1,23 @@
 package configs
 
 import (
+	"fmt"
 	"log"
 	"os"
 
 	"github.com/joho/godotenv"
 )
 
-type PortConfig struct {
-	Port string
-}
-
-func LoadPortConfig() (*PortConfig, error) {
+func LoadPort() (string, error) {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-	config := &PortConfig{
-		Port: os.Getenv("PORT"),
+	port := os.Getenv("PORT")
+	if port == "" {
+		return "", fmt.Errorf("PORT not found in environment variables")
 	}
 
-	return config, nil
+	return port, nil
 }
