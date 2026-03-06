@@ -54,6 +54,8 @@ func main() {
 	userURL := getEnv("USER_SERVICE_URL", "http://user-domain:8081")
 	chatURL := getEnv("CHAT_SERVICE_URL", "http://chat-domain:8082")
 	musicURL := getEnv("MUSIC_SERVICE_URL", "http://music-domain:8083")
+	interactionURL := getEnv("INTERACTION_SERVICE_URL", "http://interaction-domain:8084")
+	matchURL := getEnv("MATCH_SERVICE_URL", "http://match-domain:8085")
 
 	// Create reverse proxies
 	authProxy, err := newReverseProxy(authURL)
@@ -74,6 +76,16 @@ func main() {
 	musicProxy, err := newReverseProxy(musicURL)
 	if err != nil {
 		log.Fatalf("Failed to create music proxy: %v", err)
+	}
+
+	interactionProxy, err := newReverseProxy(interactionURL)
+	if err != nil {
+		log.Fatalf("Failed to create interaction proxy: %v", err)
+	}
+
+	matchProxy, err := newReverseProxy(matchURL)
+	if err != nil {
+		log.Fatalf("Failed to create match proxy: %v", err)
 	}
 
 	r := gin.Default()
@@ -129,6 +141,24 @@ func main() {
 		})
 	}
 
+	// --- Interaction Domain ---
+	interactions := r.Group("/api/interactions")
+	{
+		interactions.Any("/*path", func(c *gin.Context) {
+			c.Request.URL.Path = c.Param("path")
+			interactionProxy.ServeHTTP(c.Writer, c.Request)
+		})
+	}
+
+	// --- Match Domain ---
+	matches := r.Group("/api/matches")
+	{
+		matches.Any("/*path", func(c *gin.Context) {
+			c.Request.URL.Path = c.Param("path")
+			matchProxy.ServeHTTP(c.Writer, c.Request)
+		})
+	}
+
 	// --- Chat Domain (WebSocket) ---
 	// Routes: GET /ws/chat/:room_id
 	r.Any("/ws/*path", func(c *gin.Context) {
@@ -139,10 +169,12 @@ func main() {
 
 	port := getEnv("GATEWAY_PORT", "8000")
 	log.Printf("🚀 API Gateway starting on port %s", port)
-	log.Printf("   Auth   → %s", authURL)
-	log.Printf("   User   → %s", userURL)
-	log.Printf("   Chat   → %s", chatURL)
-	log.Printf("   Music  → %s", musicURL)
+	log.Printf("   Auth        → %s", authURL)
+	log.Printf("   User        → %s", userURL)
+	log.Printf("   Chat        → %s", chatURL)
+	log.Printf("   Music       → %s", musicURL)
+	log.Printf("   Interaction → %s", interactionURL)
+	log.Printf("   Match       → %s", matchURL)
 
 	if err := r.Run(":" + port); err != nil {
 		log.Fatalf("Failed to start gateway: %v", err)

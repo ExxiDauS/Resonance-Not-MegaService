@@ -6,5 +6,7 @@ use (
 	./user-domain
 	./chat-domain
 	./music-domain
+	./interaction-domain
+	./match-domain
 	./utils
 )

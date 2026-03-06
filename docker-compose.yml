@@ -104,6 +104,8 @@ services:
       USER_SERVICE_URL: "http://user-domain:8081"
       CHAT_SERVICE_URL: "http://chat-domain:8082"
       MUSIC_SERVICE_URL: "http://music-domain:8083"
+      INTERACTION_SERVICE_URL: "http://interaction-domain:8084"
+      MATCH_SERVICE_URL: "http://match-domain:8085"
     networks:
       - resonance-network
     depends_on:
@@ -113,30 +115,30 @@ services:
       - music-domain
 
   # ============================================
-  # Stub Domains (uncomment when implemented)
+  # Placeholder Domains
   # ============================================
 
-  # interaction-domain:
-  #   build:
-  #     context: ./interaction-domain
-  #     dockerfile: Dockerfile
-  #   container_name: resonance-interaction
-  #   restart: unless-stopped
-  #   env_file:
-  #     - ./interaction-domain/.env
-  #   networks:
-  #     - resonance-network
+  interaction-domain:
+    build:
+      context: ./interaction-domain
+      dockerfile: Dockerfile
+    container_name: resonance-interaction
+    restart: unless-stopped
+    environment:
+      PORT: "8084"
+    networks:
+      - resonance-network
 
-  # match-domain:
-  #   build:
-  #     context: ./match-domain
-  #     dockerfile: Dockerfile
-  #   container_name: resonance-match
-  #   restart: unless-stopped
-  #   env_file:
-  #     - ./match-domain/.env
-  #   networks:
-  #     - resonance-network
+  match-domain:
+    build:
+      context: ./match-domain
+      dockerfile: Dockerfile
+    container_name: resonance-match
+    restart: unless-stopped
+    environment:
+      PORT: "8085"
+    networks:
+      - resonance-network
 
 volumes:
   rabbitmq_data:
