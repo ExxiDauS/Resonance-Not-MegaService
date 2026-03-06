@@ -1,0 +1,146 @@
+services:
+  # ============================================
+  # Infrastructure
+  # ============================================
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: resonance-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - resonance-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  # ============================================
+  # Domain Services
+  # ============================================
+
+  auth-domain:
+    build:
+      context: ./auth-domain
+      dockerfile: Dockerfile
+    container_name: resonance-auth
+    restart: unless-stopped
+    env_file:
+      - ./auth-domain/.env
+    environment:
+      PORT: ":8080"
+    networks:
+      - resonance-network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  user-domain:
+    build:
+      context: ./user-domain
+      dockerfile: Dockerfile
+    container_name: resonance-user
+    restart: unless-stopped
+    env_file:
+      - ./user-domain/.env
+    environment:
+      PORT: ":8081"
+    networks:
+      - resonance-network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  chat-domain:
+    build:
+      context: ./chat-domain
+      dockerfile: Dockerfile
+    container_name: resonance-chat
+    restart: unless-stopped
+    env_file:
+      - ./chat-domain/.env
+    environment:
+      PORT: "8082"
+    networks:
+      - resonance-network
+
+  music-domain:
+    build:
+      context: .
+      dockerfile: music-domain/Dockerfile
+    container_name: resonance-music
+    restart: unless-stopped
+    env_file:
+      - ./music-domain/.env
+    environment:
+      PORT: "8083"
+    networks:
+      - resonance-network
+
+
+  # ============================================
+  # API Gateway
+  # ============================================
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: resonance-gateway
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      GATEWAY_PORT: "8000"
+      AUTH_SERVICE_URL: "http://auth-domain:8080"
+      USER_SERVICE_URL: "http://user-domain:8081"
+      CHAT_SERVICE_URL: "http://chat-domain:8082"
+      MUSIC_SERVICE_URL: "http://music-domain:8083"
+    networks:
+      - resonance-network
+    depends_on:
+      - auth-domain
+      - user-domain
+      - chat-domain
+      - music-domain
+
+  # ============================================
+  # Stub Domains (uncomment when implemented)
+  # ============================================
+
+  # interaction-domain:
+  #   build:
+  #     context: ./interaction-domain
+  #     dockerfile: Dockerfile
+  #   container_name: resonance-interaction
+  #   restart: unless-stopped
+  #   env_file:
+  #     - ./interaction-domain/.env
+  #   networks:
+  #     - resonance-network
+
+  # match-domain:
+  #   build:
+  #     context: ./match-domain
+  #     dockerfile: Dockerfile
+  #   container_name: resonance-match
+  #   restart: unless-stopped
+  #   env_file:
+  #     - ./match-domain/.env
+  #   networks:
+  #     - resonance-network
+
+volumes:
+  rabbitmq_data:
+
+networks:
+  resonance-network:
+    driver: bridge
