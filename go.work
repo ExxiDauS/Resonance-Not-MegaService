@@ -1,6 +1,8 @@
 go 1.25.4
 
 use (
+	./auth-domain
+	./user-domain
 	./chat-domain
 	./music-domain
 	./utils

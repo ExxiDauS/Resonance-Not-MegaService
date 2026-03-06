@@ -129,6 +129,23 @@ func (h *Handler) UpdateUserProfile(c *gin.Context) {
 	})
 }
 
+func (h *Handler) GetMe(c *gin.Context) {
+	userID := c.GetString("user_id") // From JWT
+	profile, err := h.service.GetUserProfileByID(userID)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(404, gin.H{"success": false, "message": "User profile not found"})
+		} else {
+			c.JSON(500, gin.H{"success": false, "message": "Database error", "error": err.Error()})
+		}
+		return
+	}
+	c.JSON(200, gin.H{
+		"success": true,
+		"profile": profile,
+	})
+}
+
 func (h *Handler) DeleteUserProfile(c *gin.Context) {
 	userID := c.Param("id")
 	authenticatedUserID := c.GetString("user_id") // From JWT
