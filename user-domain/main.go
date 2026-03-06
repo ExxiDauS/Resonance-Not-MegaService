@@ -72,6 +72,7 @@ func main() {
 	protected := r.Group("/")
 	protected.Use(middleware.AuthMiddleware(jwtSecret))
 
+	protected.GET("/me", handler.GetMe)
 	protected.POST("/profiles", handler.CreateUserProfile)
 	protected.GET("/profiles", handler.GetAllUserProfiles)
 	protected.GET("/profiles/:id", handler.GetUserProfileByID)

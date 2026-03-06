@@ -19,5 +19,5 @@ func LoadPort() (string, error) {
 		return "", fmt.Errorf("PORT not found in environment variables")
 	}
 
-	return ":" + port, nil
+	return port, nil
 }
