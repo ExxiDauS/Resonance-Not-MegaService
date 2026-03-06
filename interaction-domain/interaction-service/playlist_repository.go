@@ -1,6 +1,8 @@
 package interactionservice
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 
 	"gorm.io/gorm"
@@ -121,6 +123,10 @@ func (r *playlistRepository) AddTrack(playlistID, trackID string) error {
 		return nil
 	}
 
+	if err != gorm.ErrRecordNotFound {
+		return err
+	}
+
 	return r.db.Create(&PlaylistTrack{
 		PlaylistID: playlistID,
 		TrackID:    trackID,
@@ -128,9 +134,16 @@ func (r *playlistRepository) AddTrack(playlistID, trackID string) error {
 }
 
 func (r *playlistRepository) RemoveTrack(playlistID string, trackID string) error {
-	return r.db.
+
+	result := r.db.
 		Where("playlist_id = ? AND track_id = ?", playlistID, trackID).
-		Delete(&PlaylistTrack{}).Error
+		Delete(&PlaylistTrack{})
+
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("track not found")
+	}
+
+	return result.Error
 }
 
 func (r *playlistRepository) GetUserSwipedTracks(userID string) ([]string, error) {

@@ -70,7 +70,7 @@ func (h *PlaylistHandler) CreatePlaylist(c *gin.Context) {
 	c.JSON(http.StatusCreated, playlist)
 }
 
-// READ (single)
+// READ
 func (h *PlaylistHandler) GetPlaylist(c *gin.Context) {
 	id := c.Param("id")
 
@@ -83,7 +83,7 @@ func (h *PlaylistHandler) GetPlaylist(c *gin.Context) {
 	c.JSON(http.StatusOK, playlist)
 }
 
-// READ (user playlists)
+// READ
 func (h *PlaylistHandler) GetUserPlaylists(c *gin.Context) {
 	userID := c.Param("userId")
 
@@ -96,7 +96,7 @@ func (h *PlaylistHandler) GetUserPlaylists(c *gin.Context) {
 	c.JSON(http.StatusOK, playlists)
 }
 
-// UPDATE (rename)
+// UPDATE
 func (h *PlaylistHandler) UpdatePlaylistName(c *gin.Context) {
 	id := c.Param("id")
 

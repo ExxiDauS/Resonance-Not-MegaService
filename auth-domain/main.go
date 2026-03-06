@@ -4,11 +4,8 @@ import (
 	authservice "auth-domain/auth-service"
 	"auth-domain/configs"
 	database "auth-domain/infrastructures/databases"
-<<<<<<< HEAD
-=======
 	"auth-domain/infrastructures/messaging"
 	"log"
->>>>>>> 3e95c3ee2f2d0c06c5398ceb0f7702a14c7de890
 	"time"
 
 	"github.com/gin-contrib/cors"

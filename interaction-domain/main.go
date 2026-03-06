@@ -12,49 +12,79 @@ import (
 )
 
 func main() {
+
+	// ---------------- DATABASE ----------------
 	db, err := database.NewPostgresDatabaseClient()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Auto migrate
-	if err := db.AutoMigrate(&interactionservice.Swipe{},
+	err = db.AutoMigrate(
+		&interactionservice.Swipe{},
 		&interactionservice.PlaylistTrack{},
 		&interactionservice.PersonalPlaylist{},
 		&interactionservice.RecommendedPlaylist{},
-	); err != nil {
+	)
+	if err != nil {
 		panic("Failed to migrate database: " + err.Error())
 	}
 
-	// RabbitMQ
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	// ---------------- RABBITMQ CONFIG ----------------
+	rabbitMQConfig, err := configs.LoadRabbitMQConfig()
 	if err != nil {
-		log.Fatal("Failed to connect to RabbitMQ:", err)
+		panic("Failed to load RabbitMQ configuration: " + err.Error())
 	}
+
+	// ---------------- RABBITMQ CONNECTION ----------------
+	conn, err := amqp.Dial(rabbitMQConfig.URL)
+	if err != nil {
+		panic("Failed to connect to RabbitMQ: " + err.Error())
+	}
+	defer conn.Close()
 
 	ch, err := conn.Channel()
 	if err != nil {
-		log.Fatal("Failed to open channel:", err)
+		panic("Failed to open RabbitMQ channel: " + err.Error())
+	}
+	defer ch.Close()
+
+	// ---------------- DECLARE QUEUE ----------------
+	_, err = ch.QueueDeclare(
+		"swipe_queue",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		panic("Failed to declare queue: " + err.Error())
 	}
 
+	// ---------------- TRACK CLIENT ----------------
 	trackClient := interactionservice.NewHTTPTrackClient(
 		"http://localhost:8080",
 	)
 
+	// ---------------- SWIPE SERVICE ----------------
 	repo := interactionservice.NewSwipeRepository(db)
 	svc := interactionservice.NewSwipeService(repo, ch, trackClient)
 	h := interactionservice.NewSwipeHandler(svc)
 
+	// ---------------- PLAYLIST SERVICE ----------------
 	playlistRepo := interactionservice.NewPlaylistRepository(db)
 	playlistSvc := interactionservice.NewPlaylistService(playlistRepo)
 	playlistHandler := interactionservice.NewPlaylistHandler(playlistSvc)
 
+	// ---------------- PORT ----------------
 	port, err := configs.LoadPort()
 	if err != nil {
 		panic("Failed to load port configuration: " + err.Error())
 	}
 
+	// ---------------- ROUTER ----------------
 	r := gin.Default()
+
 	r.GET("/tracks/random", h.GetRandomTrack)
 	r.POST("/swipe", h.Swipe)
 
@@ -66,7 +96,9 @@ func main() {
 
 	r.POST("/playlists/:id/tracks/:trackId", playlistHandler.AddTrack)
 	r.DELETE("/playlists/:id/tracks/:trackId", playlistHandler.RemoveTrack)
+
 	r.GET("/users/:userId/recommended", playlistHandler.GetRecommended)
 
+	log.Println("Server running on", port)
 	r.Run(port)
 }
