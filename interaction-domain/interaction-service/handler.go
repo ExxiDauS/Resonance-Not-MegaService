@@ -47,7 +47,7 @@ func (h *SwipeHandler) GetSwipe(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, swipes)
+	c.JSON(http.StatusOK, swipes)
 }
 
 func (h *SwipeHandler) GetSwipeByUser(c *gin.Context) {
@@ -57,7 +57,7 @@ func (h *SwipeHandler) GetSwipeByUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, swipes)
+	c.JSON(http.StatusOK, swipes)
 }
 
 // PlaylistHandler is a placeholder for future playlist-related endpoints
