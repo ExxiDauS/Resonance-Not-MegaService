@@ -19,9 +19,9 @@ func LoadDatabaseConfig() (*DatabaseConfig, error) {
 		log.Fatal("Error loading .env file")
 	}
 
-	dbURL := os.Getenv("AUTH_DOMAIN_URL")
-	username := os.Getenv("AUTH_DOMAIN_USERNAME")
-	password := os.Getenv("AUTH_DOMAIN_PASSWORD")
+	dbURL := os.Getenv("MATCH_DOMAIN_URL")
+	username := os.Getenv("MATCH_DOMAIN_USERNAME")
+	password := os.Getenv("MATCH_DOMAIN_PASSWORD")
 
 	// Remove JDBC prefix if present
 	dbURL = strings.TrimPrefix(dbURL, "jdbc:")
