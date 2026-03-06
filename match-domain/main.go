@@ -33,11 +33,9 @@ func main() {
 
 	r := gin.Default()
 
-	r.POST("/matches", handler.CreateMatch)
 	r.GET("/matches/user/:user_id", handler.GetMatchesByUserID)
 	r.GET("/matches/:match_id", handler.GetMatchByID)
 	r.GET("/matches", handler.GetAllMatches)
-	r.DELETE("/matches/:match_id", handler.DeleteMatch)
 
 	log.Printf("Match service starting on port %s", port)
 	r.Run(port)
