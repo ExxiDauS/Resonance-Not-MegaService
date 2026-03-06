@@ -23,7 +23,6 @@ func main() {
 		&interactionservice.Swipe{},
 		&interactionservice.PlaylistTrack{},
 		&interactionservice.PersonalPlaylist{},
-		&interactionservice.RecommendedPlaylist{},
 	)
 	if err != nil {
 		panic("Failed to migrate database: " + err.Error())
@@ -87,6 +86,8 @@ func main() {
 
 	r.GET("/tracks/random", h.GetRandomTrack)
 	r.POST("/swipe", h.Swipe)
+	r.GET("/swipes/:swipeId", h.GetSwipe)
+	r.GET("/users/:userId/swipes", h.GetSwipeByUser)
 
 	r.POST("/playlists", playlistHandler.CreatePlaylist)
 	r.GET("/playlists/:id", playlistHandler.GetPlaylist)

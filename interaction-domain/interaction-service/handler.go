@@ -40,6 +40,26 @@ func (h *SwipeHandler) Swipe(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "swiped successfully"})
 }
 
+func (h *SwipeHandler) GetSwipe(c *gin.Context) {
+	swipeID := c.Param("swipeId")
+	swipes, err := h.service.GetSwipe(c.Request.Context(), swipeID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, swipes)
+}
+
+func (h *SwipeHandler) GetSwipeByUser(c *gin.Context) {
+	userID := c.Param("userId")
+	swipes, err := h.service.GetUserSwipes(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, swipes)
+}
+
 // PlaylistHandler is a placeholder for future playlist-related endpoints
 type PlaylistHandler struct {
 	service PlaylistService

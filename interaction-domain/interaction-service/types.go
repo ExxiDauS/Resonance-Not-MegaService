@@ -19,7 +19,7 @@ type PlaylistTrack struct {
 	ID         string `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
 	PlaylistID string `gorm:"index;not null"`
 	TrackID    string `gorm:"index;not null"`
-	CreatedAt  time.Time
+	AddedAt    time.Time
 }
 
 type PersonalPlaylist struct {
@@ -28,12 +28,6 @@ type PersonalPlaylist struct {
 	Name   string
 
 	Track []string `gorm:"-"`
-}
-
-type RecommendedPlaylist struct {
-	UserID string `gorm:"type:uuid;primaryKey"`
-
-	Tracks []string `gorm:"serializer:json"`
 }
 
 type SwipeRequest struct {

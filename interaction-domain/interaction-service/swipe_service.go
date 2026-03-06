@@ -11,6 +11,8 @@ import (
 type SwipeService interface {
 	GetRandomTrack(ctx context.Context) (*TrackResponse, error)
 	Swipe(ctx context.Context, req *SwipeRequest) error
+	GetUserSwipes(ctx context.Context, userID string) ([]Swipe, error)
+	GetSwipe(ctx context.Context, swipe_id string) ([]Swipe, error)
 }
 
 type swipeService struct {
@@ -33,6 +35,14 @@ func NewSwipeService(
 
 func (s *swipeService) GetRandomTrack(ctx context.Context) (*TrackResponse, error) {
 	return s.trackClient.GetRandomTrack(ctx)
+}
+
+func (s *swipeService) GetSwipe(ctx context.Context, swipe_id string) ([]Swipe, error) {
+	return s.repo.GetUserSwipes(ctx, swipe_id)
+}
+
+func (s *swipeService) GetUserSwipes(ctx context.Context, userID string) ([]Swipe, error) {
+	return s.repo.GetSwipesByUserID(ctx, userID)
 }
 
 func (s *swipeService) Swipe(ctx context.Context, req *SwipeRequest) error {
