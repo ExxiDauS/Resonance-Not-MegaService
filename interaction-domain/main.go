@@ -60,14 +60,9 @@ func main() {
 		panic("Failed to declare queue: " + err.Error())
 	}
 
-	// ---------------- TRACK CLIENT ----------------
-	trackClient := interactionservice.NewHTTPTrackClient(
-		"http://music-service:8083",
-	)
-
 	// ---------------- SWIPE SERVICE ----------------
 	repo := interactionservice.NewSwipeRepository(db)
-	svc := interactionservice.NewSwipeService(repo, ch, trackClient)
+	svc := interactionservice.NewSwipeService(repo, ch)
 	h := interactionservice.NewSwipeHandler(svc)
 
 	// ---------------- PLAYLIST SERVICE ----------------
@@ -84,7 +79,6 @@ func main() {
 	// ---------------- ROUTER ----------------
 	r := gin.Default()
 
-	r.GET("/tracks/random", h.GetRandomTrack)
 	r.POST("/swipe", h.Swipe)
 	r.GET("/swipes/:swipeId", h.GetSwipe)
 	r.GET("/users/:userId/swipes", h.GetSwipeByUser)
