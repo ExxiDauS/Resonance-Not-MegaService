@@ -21,7 +21,7 @@ func LoadRabbitMQConfig() (*RabbitMQConfig, error) {
 	host := os.Getenv("RABBITMQ_HOST")
 	port := os.Getenv("RABBITMQ_PORT")
 	user := os.Getenv("RABBITMQ_USER")
-	password := os.Getenv("RABBITMQ_PASSWORD")
+	password := os.Getenv("RABBITMQ_PASS")
 
 	if host == "" || port == "" || user == "" || password == "" {
 		return nil, fmt.Errorf("RabbitMQ configuration missing in environment variables")

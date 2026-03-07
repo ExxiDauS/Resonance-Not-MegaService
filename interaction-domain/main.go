@@ -62,7 +62,7 @@ func main() {
 
 	// ---------------- TRACK CLIENT ----------------
 	trackClient := interactionservice.NewHTTPTrackClient(
-		"http://localhost:8080",
+		"http://music-service:8083",
 	)
 
 	// ---------------- SWIPE SERVICE ----------------
