@@ -9,7 +9,6 @@ import (
 )
 
 type SwipeService interface {
-	GetRandomTrack(ctx context.Context) (*TrackResponse, error)
 	Swipe(ctx context.Context, req *SwipeRequest) error
 	GetUserSwipes(ctx context.Context, userID string) ([]Swipe, error)
 	GetSwipe(ctx context.Context, swipe_id string) ([]Swipe, error)
@@ -18,23 +17,16 @@ type SwipeService interface {
 type swipeService struct {
 	repo        SwipeRepository
 	rabbitConn  *amqp.Channel
-	trackClient TrackClient
 }
 
 func NewSwipeService(
 	repo SwipeRepository,
 	rabbit *amqp.Channel,
-	trackClient TrackClient,
 ) SwipeService {
 	return &swipeService{
 		repo:        repo,
 		rabbitConn:  rabbit,
-		trackClient: trackClient,
 	}
-}
-
-func (s *swipeService) GetRandomTrack(ctx context.Context) (*TrackResponse, error) {
-	return s.trackClient.GetRandomTrack(ctx)
 }
 
 func (s *swipeService) GetSwipe(ctx context.Context, swipe_id string) ([]Swipe, error) {
