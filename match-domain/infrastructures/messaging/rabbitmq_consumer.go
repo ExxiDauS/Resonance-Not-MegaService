@@ -117,6 +117,11 @@ func (c *RabbitMQConsumer) handleMessage(msg amqp.Delivery) error {
 	log.Printf("Received swipe event: UserID=%s, TrackId=%s, Action=%s",
 		event.UserID, event.TrackId, event.Action)
 
+	if event.Action != "like" {
+		log.Printf("Ignoring non-like action: %s", event.Action)
+		return nil // Acknowledge the message even if it's not a "like"
+	}
+
 	// Parse UUID
 	userID, err := uuid.Parse(event.UserID)
 	if err != nil {
