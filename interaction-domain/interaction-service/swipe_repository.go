@@ -12,7 +12,7 @@ import (
 type SwipeRepository interface {
 	Save(ctx context.Context, swipe *Swipe) error
 	GetSwipesByUserID(ctx context.Context, userID string) ([]Swipe, error)
-	GetSwipes(ctx context.Context, swipe_id string) ([]Swipe, error)
+	GetSwipe(ctx context.Context, swipe_id string) (*Swipe, error)
 }
 
 type swipeRepository struct {
@@ -23,12 +23,18 @@ func NewSwipeRepository(db *gorm.DB) SwipeRepository {
 	return &swipeRepository{db: db}
 }
 
-func (r *swipeRepository) GetSwipes(ctx context.Context, swipe_id string) ([]Swipe, error) {
-	var swipes []Swipe
+func (r *swipeRepository) GetSwipe(ctx context.Context, swipeID string) (*Swipe, error) {
+	var swipe Swipe
+
 	err := r.db.WithContext(ctx).
-		Where("id = ?", swipe_id).
-		Find(&swipes).Error
-	return swipes, err
+		Where("id = ?", swipeID).
+		First(&swipe).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &swipe, nil
 }
 
 func (r *swipeRepository) GetSwipesByUserID(ctx context.Context, userID string) ([]Swipe, error) {
@@ -36,6 +42,10 @@ func (r *swipeRepository) GetSwipesByUserID(ctx context.Context, userID string) 
 	err := r.db.WithContext(ctx).
 		Where("user_id = ?", userID).
 		Find(&swipes).Error
+	if err != nil {
+		return nil, err
+	}
+
 	return swipes, err
 }
 

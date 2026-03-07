@@ -11,12 +11,12 @@ import (
 type SwipeService interface {
 	Swipe(ctx context.Context, req *SwipeRequest) error
 	GetUserSwipes(ctx context.Context, userID string) ([]Swipe, error)
-	GetSwipe(ctx context.Context, swipe_id string) ([]Swipe, error)
+	GetSwipe(ctx context.Context, swipe_id string) (*Swipe, error)
 }
 
 type swipeService struct {
-	repo        SwipeRepository
-	rabbitConn  *amqp.Channel
+	repo       SwipeRepository
+	rabbitConn *amqp.Channel
 }
 
 func NewSwipeService(
@@ -24,13 +24,13 @@ func NewSwipeService(
 	rabbit *amqp.Channel,
 ) SwipeService {
 	return &swipeService{
-		repo:        repo,
-		rabbitConn:  rabbit,
+		repo:       repo,
+		rabbitConn: rabbit,
 	}
 }
 
-func (s *swipeService) GetSwipe(ctx context.Context, swipe_id string) ([]Swipe, error) {
-	return s.repo.GetSwipes(ctx, swipe_id)
+func (s *swipeService) GetSwipe(ctx context.Context, swipe_id string) (*Swipe, error) {
+	return s.repo.GetSwipe(ctx, swipe_id)
 }
 
 func (s *swipeService) GetUserSwipes(ctx context.Context, userID string) ([]Swipe, error) {

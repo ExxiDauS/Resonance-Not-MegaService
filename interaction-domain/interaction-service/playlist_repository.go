@@ -1,8 +1,6 @@
 package interactionservice
 
 import (
-	"fmt"
-
 	"github.com/google/uuid"
 
 	"gorm.io/gorm"
@@ -139,8 +137,12 @@ func (r *playlistRepository) RemoveTrack(playlistID string, trackID string) erro
 		Where("playlist_id = ? AND track_id = ?", playlistID, trackID).
 		Delete(&PlaylistTrack{})
 
+	if result.Error != nil {
+		return result.Error
+	}
+
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("track not found")
+		return gorm.ErrRecordNotFound
 	}
 
 	return result.Error

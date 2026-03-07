@@ -1,6 +1,7 @@
 package interactionservice
 
 import (
+	"errors"
 	"interaction-domain/interaction-service/function"
 
 	"github.com/google/uuid"
@@ -70,6 +71,10 @@ func (s *playlistService) UpdateRecommended(userID string) error {
 		return err
 	}
 
+	if len(tracks) == 0 {
+		return errors.New("no liked tracks found for user")
+	}
+
 	randomTracks := function.RandomTracks(tracks, 10)
 
 	playlist, err := s.repo.GetOrCreateRecommendedPlaylist(userID)
@@ -84,7 +89,7 @@ func (s *playlistService) UpdateRecommended(userID string) error {
 	}
 
 	for _, track := range randomTracks {
-		err := s.repo.AddTrack(playlist.ID, track)
+		err = s.repo.AddTrack(playlist.ID, track)
 		if err != nil {
 			return err
 		}

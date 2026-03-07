@@ -86,7 +86,7 @@ func main() {
 	r.POST("/playlists", playlistHandler.CreatePlaylist)
 	r.GET("/playlists/:id", playlistHandler.GetPlaylist)
 	r.GET("/users/:userId/playlists", playlistHandler.GetUserPlaylists)
-	r.PUT("/playlists/:id", playlistHandler.UpdatePlaylistName)
+	r.PATCH("/playlists/:id", playlistHandler.UpdatePlaylistName)
 	r.DELETE("/playlists/:id", playlistHandler.DeletePlaylist)
 
 	r.POST("/playlists/:id/tracks/:trackId", playlistHandler.AddTrack)
