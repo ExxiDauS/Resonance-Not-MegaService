@@ -3,7 +3,7 @@ package database
 import (
 	"log"
 
-	"auth-domain/configs"
+	"match-domain/configs"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

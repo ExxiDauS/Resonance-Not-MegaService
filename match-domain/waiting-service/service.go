@@ -37,6 +37,11 @@ func (s *Service) ProcessWaiting(userID uuid.UUID, trackID string) error {
 		return s.repo.AddToWaiting(entry)
 	}
 
+	// Prevent a user from being matched with themselves
+	if existing.UserID == userID {
+		return nil
+	}
+
 	match := &matchesservice.Match{
 		MatchID:   uuid.New(),
 		UserAID:   existing.UserID,
