@@ -12,7 +12,7 @@ import (
 type SwipeRepository interface {
 	Save(ctx context.Context, swipe *Swipe) error
 	GetSwipesByUserID(ctx context.Context, userID string) ([]Swipe, error)
-	GetUserSwipes(ctx context.Context, swipe_id string) ([]Swipe, error)
+	GetSwipes(ctx context.Context, swipe_id string) ([]Swipe, error)
 }
 
 type swipeRepository struct {
@@ -23,7 +23,7 @@ func NewSwipeRepository(db *gorm.DB) SwipeRepository {
 	return &swipeRepository{db: db}
 }
 
-func (r *swipeRepository) GetUserSwipes(ctx context.Context, swipe_id string) ([]Swipe, error) {
+func (r *swipeRepository) GetSwipes(ctx context.Context, swipe_id string) ([]Swipe, error) {
 	var swipes []Swipe
 	err := r.db.WithContext(ctx).
 		Where("id = ?", swipe_id).

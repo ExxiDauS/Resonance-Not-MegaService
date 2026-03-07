@@ -38,7 +38,7 @@ func (s *swipeService) GetRandomTrack(ctx context.Context) (*TrackResponse, erro
 }
 
 func (s *swipeService) GetSwipe(ctx context.Context, swipe_id string) ([]Swipe, error) {
-	return s.repo.GetUserSwipes(ctx, swipe_id)
+	return s.repo.GetSwipes(ctx, swipe_id)
 }
 
 func (s *swipeService) GetUserSwipes(ctx context.Context, userID string) ([]Swipe, error) {
