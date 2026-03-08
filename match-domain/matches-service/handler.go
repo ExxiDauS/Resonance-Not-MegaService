@@ -49,13 +49,21 @@ func (h *Handler) CreateMatch(c *gin.Context) {
 func (h *Handler) GetMatchesByUserID(c *gin.Context) {
 	userID := c.Param("user_id")
 	matches, err := h.service.GetMatchesByUserID(userID)
+
 	if err != nil {
-		c.JSON(500, gin.H{
-			"success": false,
-			"message": "Failed to retrieve matches",
-			"error":   err.Error(),
-		})
-		return
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(404, gin.H{
+				"success": false,
+				"message": "No matches found for the user",
+			})
+		} else {
+			c.JSON(500, gin.H{
+				"success": false,
+				"message": "Failed to retrieve matches",
+				"error":   err.Error(),
+			})
+			return
+		}
 	}
 	c.JSON(200, gin.H{
 		"success": true,

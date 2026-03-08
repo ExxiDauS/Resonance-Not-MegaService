@@ -20,6 +20,10 @@ func (r *Repository) CreateMatch(match *Match) error {
 func (r *Repository) GetMatchesByUserID(userID uuid.UUID) ([]Match, error) {
 	var matches []Match
 	err := r.db.Where("user_a_id = ? OR user_b_id = ?", userID, userID).Find(&matches).Error
+
+	if err == gorm.ErrRecordNotFound {
+		return nil, gorm.ErrRecordNotFound
+	}
 	return matches, err
 }
 

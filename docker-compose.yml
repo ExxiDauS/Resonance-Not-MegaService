@@ -85,6 +85,19 @@ services:
     networks:
       - resonance-network
 
+  match-domain:
+    build:
+      context: ./match-domain
+      dockerfile: Dockerfile
+    container_name: resonance-match
+    restart: unless-stopped
+    env_file:
+      - ./match-domain/.env
+    environment:
+      PORT: "8085"
+    networks:
+      - resonance-network
+
 
   # ============================================
   # API Gateway
@@ -113,7 +126,7 @@ services:
       - user-domain
       - chat-domain
       - music-domain
-
+      - match-domain
   # ============================================
   # Placeholder Domains
   # ============================================
@@ -126,17 +139,6 @@ services:
     restart: unless-stopped
     environment:
       PORT: "8084"
-    networks:
-      - resonance-network
-
-  match-domain:
-    build:
-      context: ./match-domain
-      dockerfile: Dockerfile
-    container_name: resonance-match
-    restart: unless-stopped
-    environment:
-      PORT: "8085"
     networks:
       - resonance-network
 
