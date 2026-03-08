@@ -62,8 +62,8 @@ func (h *Handler) GetMatchesByUserID(c *gin.Context) {
 				"message": "Failed to retrieve matches",
 				"error":   err.Error(),
 			})
-			return
 		}
+		return
 	}
 	c.JSON(200, gin.H{
 		"success": true,
