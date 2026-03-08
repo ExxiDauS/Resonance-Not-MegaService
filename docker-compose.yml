@@ -36,7 +36,7 @@ services:
     env_file:
       - ./auth-domain/.env
     environment:
-      PORT: ":8080"
+      PORT: "8080"
     networks:
       - resonance-network
     depends_on:
@@ -52,7 +52,7 @@ services:
     env_file:
       - ./user-domain/.env
     environment:
-      PORT: ":8081"
+      PORT: "8081"
     networks:
       - resonance-network
     depends_on:
@@ -133,10 +133,12 @@ services:
 
   interaction-domain:
     build:
-      context: ./interaction-domain
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: interaction-domain/Dockerfile
     container_name: resonance-interaction
     restart: unless-stopped
+    env_file:
+      - ./interaction-domain/.env
     environment:
       PORT: "8084"
     networks:

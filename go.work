@@ -3,10 +3,10 @@ go 1.25.4
 use (
 	.
 	./auth-domain
-	./user-domain
 	./chat-domain
-	./music-domain
 	./interaction-domain
 	./match-domain
+	./music-domain
+	./user-domain
 	./utils
 )

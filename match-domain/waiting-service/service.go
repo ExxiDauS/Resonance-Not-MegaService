@@ -1,6 +1,7 @@
 package waitingservice
 
 import (
+	"errors"
 	"time"
 
 	matchesservice "match-domain/matches-service"
@@ -31,7 +32,7 @@ func (s *Service) ProcessWaiting(userID uuid.UUID, trackID string) error {
 		entry := &Waiting{
 			ID:        uuid.New(),
 			UserID:    userID,
-			TrackId:   trackID,
+			TrackID:   trackID,
 			CreatedAt: time.Now(),
 		}
 		return s.repo.AddToWaiting(entry)
@@ -46,10 +47,20 @@ func (s *Service) ProcessWaiting(userID uuid.UUID, trackID string) error {
 		MatchID:   uuid.New(),
 		UserAID:   existing.UserID,
 		UserBID:   userID,
-		TrackedAt: trackID,
+		TrackID:   trackID,
 		CreatedAt: time.Now(),
 	}
 	if err := s.matchService.CreateMatch(match); err != nil {
+		if errors.Is(err, matchesservice.ErrDuplicateMatch) {
+			// Already matched on this track — put current user in waiting
+			entry := &Waiting{
+				ID:        uuid.New(),
+				UserID:    userID,
+				TrackID:   trackID,
+				CreatedAt: time.Now(),
+			}
+			return s.repo.AddToWaiting(entry)
+		}
 		return err
 	}
 

@@ -81,5 +81,5 @@ func main() {
 
 	log.Printf("User service starting on port %s", port)
 	log.Printf("RabbitMQ consumer is running and waiting for messages...")
-	r.Run(port)
+	r.Run(":" + port)
 }

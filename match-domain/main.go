@@ -61,5 +61,5 @@ func main() {
 	r.DELETE("/matches/:match_id", handler.DeleteMatch)
 
 	log.Printf("Match service starting on port %s", port)
-	r.Run(port)
+	r.Run(":" + port)
 }

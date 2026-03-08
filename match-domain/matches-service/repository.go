@@ -14,6 +14,17 @@ func NewRepository(db *gorm.DB) *Repository {
 }
 
 func (r *Repository) CreateMatch(match *Match) error {
+	var existing Match
+	err := r.db.Where(
+		"track_id = ? AND ((user_a_id = ? AND user_b_id = ?) OR (user_a_id = ? AND user_b_id = ?))",
+		match.TrackID, match.UserAID, match.UserBID, match.UserBID, match.UserAID,
+	).First(&existing).Error
+	if err == nil {
+		return ErrDuplicateMatch
+	}
+	if err != gorm.ErrRecordNotFound {
+		return err
+	}
 	return r.db.Create(match).Error
 }
 
