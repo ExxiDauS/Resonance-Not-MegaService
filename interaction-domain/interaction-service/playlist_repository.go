@@ -190,19 +190,16 @@ func (r *playlistRepository) RemoveTrack(playlistID string, trackID string) erro
 
 func (r *playlistRepository) GetUserSwipedTracks(userID string) ([]string, error) {
 
-	var swipes []Swipe
+	var trackIDs []string
 
 	err := r.db.
+		Model(&Swipe{}).
+		Distinct("track_id").
 		Where("user_id = ? AND action = ?", userID, "like").
-		Find(&swipes).Error
+		Pluck("track_id", &trackIDs).Error
 
 	if err != nil {
 		return nil, err
-	}
-
-	var trackIDs []string
-	for _, s := range swipes {
-		trackIDs = append(trackIDs, s.TrackID)
 	}
 
 	return trackIDs, nil
