@@ -37,9 +37,9 @@ type SwipeRequest struct {
 }
 
 type Swipe struct {
-	ID        string `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
-	UserID    string `gorm:"type:uuid;index"`
-	TrackID   string `gorm:"index"`
-	Action    string `gorm:"type:varchar(20)"`
-	CreatedAt time.Time
+	ID        string    `gorm:"type:uuid;default:gen_random_uuid();primaryKey" json:"id"`
+	UserID    string    `gorm:"type:uuid;index" json:"user_id"`
+	TrackID   string    `gorm:"index" json:"track_id"`
+	Action    string    `gorm:"type:varchar(20)" json:"action"`
+	CreatedAt time.Time `json:"created_at"`
 }

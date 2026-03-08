@@ -66,5 +66,5 @@ func main() {
 	r.POST("/logout", handler.Logout)
 
 	log.Printf("Auth service starting on port %s", port)
-	r.Run(port)
+	r.Run(":" + port)
 }

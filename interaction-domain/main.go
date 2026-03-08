@@ -95,5 +95,5 @@ func main() {
 	r.GET("/users/:userId/recommended", playlistHandler.GetRecommended)
 
 	log.Println("Server running on", port)
-	r.Run(port)
+	r.Run(":" + port)
 }
