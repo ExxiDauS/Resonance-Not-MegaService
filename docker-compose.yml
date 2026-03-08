@@ -120,10 +120,12 @@ services:
 
   interaction-domain:
     build:
-      context: ./interaction-domain
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: interaction-domain/Dockerfile
     container_name: resonance-interaction
     restart: unless-stopped
+    env_file:
+      - ./interaction-domain/.env
     environment:
       PORT: "8084"
     networks:
