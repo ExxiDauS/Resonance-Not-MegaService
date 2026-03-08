@@ -55,10 +55,10 @@ func main() {
 
 	r := gin.Default()
 
-	r.GET("/matches/user/:user_id", handler.GetMatchesByUserID)
-	r.GET("/matches/:match_id", handler.GetMatchByID)
-	r.GET("/matches", handler.GetAllMatches)
-	r.DELETE("/matches/:match_id", handler.DeleteMatch)
+	r.GET("/user/:user_id", handler.GetMatchesByUserID)
+	r.GET("/:match_id", handler.GetMatchByID)
+	r.GET("/", handler.GetAllMatches)
+	r.DELETE("/:match_id", handler.DeleteMatch)
 
 	log.Printf("Match service starting on port %s", port)
 	r.Run(":" + port)
