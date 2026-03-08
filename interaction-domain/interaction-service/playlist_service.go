@@ -42,6 +42,14 @@ func (s *playlistService) GetPlaylist(id string) (*PersonalPlaylist, error) {
 }
 
 func (s *playlistService) GetUserPlaylists(userID string) ([]PersonalPlaylist, error) {
+	tracks, err := s.repo.GetUserSwipedTracks(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(tracks) == 0 {
+		return nil, errors.New("no playlists found for user")
+	}
 	return s.repo.FindByUserID(userID)
 }
 
@@ -62,6 +70,15 @@ func (s *playlistService) AddTrack(playlistID, trackID string) error {
 }
 
 func (s *playlistService) RemoveTrack(playlistID, trackID string) error {
+	exists, err := s.repo.PlaylistExists(playlistID)
+	if err != nil {
+		return err
+	}
+
+	if !exists {
+		return errors.New("playlist not found")
+	}
+
 	return s.repo.RemoveTrack(playlistID, trackID)
 }
 func (s *playlistService) UpdateRecommended(userID string) error {

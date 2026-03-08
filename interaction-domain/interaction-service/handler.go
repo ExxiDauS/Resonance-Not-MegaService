@@ -2,6 +2,7 @@ package interactionservice
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -166,6 +167,14 @@ func (h *PlaylistHandler) GetUserPlaylists(c *gin.Context) {
 
 	playlists, err := h.service.GetUserPlaylists(userID)
 	if err != nil {
+		if err.Error() == "no playlists found for user" {
+			c.JSON(http.StatusNotFound, gin.H{
+				"success": false,
+				"message": "no playlists found for user",
+				"error":   nil,
+			})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"message": "failed to fetch playlists",
@@ -234,6 +243,20 @@ func (h *PlaylistHandler) AddTrack(c *gin.Context) {
 	trackID := c.Param("trackId")
 
 	if err := h.service.AddTrack(playlistID, trackID); err != nil {
+		if err.Error() == fmt.Sprintf("playlist with id %s not found", playlistID) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"success": false,
+				"message": "playlist not found",
+				"error":   nil})
+			return
+		}
+		if err.Error() == "track already exists in playlist" {
+			c.JSON(http.StatusConflict, gin.H{
+				"success": false,
+				"message": "track already exists in playlist",
+				"error":   nil})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"message": "failed to add track to playlist",
@@ -251,26 +274,39 @@ func (h *PlaylistHandler) RemoveTrack(c *gin.Context) {
 
 	playlistID := c.Param("id")
 	trackID := c.Param("trackId")
-	err := h.service.RemoveTrack(playlistID, trackID)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		c.JSON(http.StatusNotFound, gin.H{
-			"success": false,
-			"message": "track not found in playlist",
-		})
-		return
-	}
 
-	if err := h.service.RemoveTrack(playlistID, trackID); err != nil {
+	err := h.service.RemoveTrack(playlistID, trackID)
+
+	if err != nil {
+		if err.Error() == "playlist not found" {
+			c.JSON(http.StatusNotFound, gin.H{
+				"success": false,
+				"message": "playlist not found",
+				"error":   nil,
+			})
+			return
+		}
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"success": false,
+				"message": "track not found in playlist",
+				"error":   nil,
+			})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"message": "failed to remove track from playlist",
-			"error":   err.Error()})
+			"error":   err.Error(),
+		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"message": "track removed"})
+		"message": "track removed",
+	})
 }
 
 func (h *PlaylistHandler) GetRecommended(c *gin.Context) {

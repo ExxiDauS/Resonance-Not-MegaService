@@ -1,6 +1,9 @@
 package interactionservice
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/google/uuid"
 
 	"gorm.io/gorm"
@@ -15,6 +18,7 @@ type PlaylistRepository interface {
 	GetTracks(playlistID string) ([]PlaylistTrack, error)
 	AddTrack(playlistID string, trackID string) error
 	RemoveTrack(playlistID string, trackID string) error
+	PlaylistExists(id string) (bool, error)
 
 	GetOrCreateRecommendedPlaylist(userID string) (*PersonalPlaylist, error)
 	GetUserSwipedTracks(userID string) ([]string, error)
@@ -98,7 +102,18 @@ func (r *playlistRepository) UpdateName(id string, name string) error {
 }
 
 func (r *playlistRepository) Delete(id string) error {
-	return r.db.Delete(&PersonalPlaylist{}, "id = ?", id).Error
+
+	result := r.db.Delete(&PersonalPlaylist{}, "id = ?", id)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+
+	return nil
 }
 
 func (r *playlistRepository) GetTracks(playlistID string) ([]PlaylistTrack, error) {
@@ -111,17 +126,26 @@ func (r *playlistRepository) GetTracks(playlistID string) ([]PlaylistTrack, erro
 
 func (r *playlistRepository) AddTrack(playlistID, trackID string) error {
 
-	var existing PlaylistTrack
+	var playlist PersonalPlaylist
+	err := r.db.First(&playlist, "id = ?", playlistID).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			errMsg := fmt.Sprintf("playlist with id %s not found", playlistID)
+			return errors.New(errMsg)
+		}
+		return err
+	}
 
-	err := r.db.
+	var existing PlaylistTrack
+	err = r.db.
 		Where("playlist_id = ? AND track_id = ?", playlistID, trackID).
 		First(&existing).Error
 
 	if err == nil {
-		return nil
+		return errors.New("track already exists in playlist")
 	}
 
-	if err != gorm.ErrRecordNotFound {
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return err
 	}
 
@@ -129,6 +153,22 @@ func (r *playlistRepository) AddTrack(playlistID, trackID string) error {
 		PlaylistID: playlistID,
 		TrackID:    trackID,
 	}).Error
+}
+
+func (r *playlistRepository) PlaylistExists(id string) (bool, error) {
+	var playlist PersonalPlaylist
+
+	err := r.db.First(&playlist, "id = ?", id).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return false, nil
+	}
+
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 func (r *playlistRepository) RemoveTrack(playlistID string, trackID string) error {
