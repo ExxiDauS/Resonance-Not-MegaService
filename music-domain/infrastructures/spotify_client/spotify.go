@@ -5,7 +5,6 @@ import (
 	"log"
 
 	spotifyauth "github.com/zmb3/spotify/v2/auth"
-
 	"golang.org/x/oauth2/clientcredentials"
 
 	"music-domain/configs"
@@ -20,17 +19,15 @@ func NewSpotifyClient() (*spotify.Client, error) {
 		log.Fatalf("couldn't load spotify config: %v", err)
 		return nil, err
 	}
+
 	config := &clientcredentials.Config{
 		ClientID:     credentials.SpotifyClientID,
 		ClientSecret: credentials.SpotifyClientSecret,
 		TokenURL:     spotifyauth.TokenURL,
 	}
-	token, err := config.Token(ctx)
-	if err != nil {
-		log.Fatalf("couldn't get token: %v", err)
-		return nil, err
-	}
-	httpClient := spotifyauth.New().Client(ctx, token)
+
+	// FIX: Instead of getting a static token, generate an auto-refreshing client directly
+	httpClient := config.Client(ctx)
 	client := spotify.New(httpClient)
 
 	return client, nil
