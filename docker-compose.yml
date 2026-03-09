@@ -97,7 +97,25 @@ services:
       PORT: "8085"
     networks:
       - resonance-network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
 
+  interaction-domain:
+    build:
+      context: .
+      dockerfile: interaction-domain/Dockerfile
+    container_name: resonance-interaction
+    restart: unless-stopped
+    env_file:
+      - ./interaction-domain/.env
+    environment:
+      PORT: "8084"
+    networks:
+      - resonance-network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
 
   # ============================================
   # API Gateway
@@ -127,22 +145,7 @@ services:
       - chat-domain
       - music-domain
       - match-domain
-  # ============================================
-  # Placeholder Domains
-  # ============================================
-
-  interaction-domain:
-    build:
-      context: .
-      dockerfile: interaction-domain/Dockerfile
-    container_name: resonance-interaction
-    restart: unless-stopped
-    env_file:
-      - ./interaction-domain/.env
-    environment:
-      PORT: "8084"
-    networks:
-      - resonance-network
+      - interaction-domain
 
 volumes:
   rabbitmq_data:
