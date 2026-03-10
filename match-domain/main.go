@@ -10,7 +10,37 @@ import (
 	waitingservice "match-domain/waiting-service"
 
 	"github.com/gin-gonic/gin"
+
+	"time"
+	"strconv"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
+
+var (
+	httpRequestsTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "match_service_http_requests_total",
+			Help: "Total number of HTTP requests",
+		},
+		[]string{"path", "status"},
+	)
+
+	requestDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "match_service_request_duration_seconds",
+			Help:    "Response time duration in seconds",
+			Buckets: prometheus.DefBuckets,
+		},
+		[]string{"path"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(httpRequestsTotal)
+	prometheus.MustRegister(requestDuration)
+}
 
 func main() {
 	// Initialize database client
@@ -54,6 +84,19 @@ func main() {
 	}
 
 	r := gin.Default()
+
+	// Middleware for Prometheus metrics
+	r.Use(func(c *gin.Context) {
+		start := time.Now()
+		c.Next()
+		duration := time.Since(start).Seconds()
+		status := strconv.Itoa(c.Writer.Status())
+
+		httpRequestsTotal.WithLabelValues(c.FullPath(), status).Inc()
+		requestDuration.WithLabelValues(c.FullPath()).Observe(duration)
+	})
+
+	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	r.GET("/user/:user_id", handler.GetMatchesByUserID)
 	r.GET("/:match_id", handler.GetMatchByID)
