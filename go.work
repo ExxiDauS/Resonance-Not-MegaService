@@ -1,0 +1,12 @@
+go 1.25.4
+
+use (
+	.
+	./auth-domain
+	./chat-domain
+	./interaction-domain
+	./match-domain
+	./music-domain
+	./user-domain
+	./utils
+)
