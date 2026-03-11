@@ -170,12 +170,17 @@ services:
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
     networks:
       - resonance-network
     depends_on:
       - prometheus
+
 volumes:
   rabbitmq_data:
+  grafana_data:
 
 networks:
   resonance-network:
