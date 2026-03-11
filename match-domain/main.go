@@ -97,6 +97,12 @@ func main() {
 	})
 
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status":  "ok",
+			"service": "match-service",
+		})
+	})
 
 	r.GET("/user/:user_id", handler.GetMatchesByUserID)
 	r.GET("/:match_id", handler.GetMatchByID)

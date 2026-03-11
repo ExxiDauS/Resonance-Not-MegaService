@@ -120,6 +120,12 @@ func main() {
 	})
 
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status":  "ok",
+			"service": "interaction-service",
+		})
+	})
 
 	r.POST("/swipe", h.Swipe)
 	r.GET("/swipes/:swipeId", h.GetSwipe)

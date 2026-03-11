@@ -71,6 +71,12 @@ func main() {
 	})
 
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status":  "ok",
+			"service": "chat-service",
+		})
+	})
 
 	// The frontend connects to this endpoint to join a room
 	// Example: ws://localhost:8081/ws/chat/room123?user_id=userA
