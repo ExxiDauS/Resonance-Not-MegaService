@@ -9,7 +9,37 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/streadway/amqp"
+
+	"time"
+	"strconv"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
+
+var (
+	httpRequestsTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "interaction_service_http_requests_total",
+			Help: "Total number of HTTP requests",
+		},
+		[]string{"path", "status"},
+	)
+
+	requestDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "interaction_service_request_duration_seconds",
+			Help:    "Response time duration in seconds",
+			Buckets: prometheus.DefBuckets,
+		},
+		[]string{"path"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(httpRequestsTotal)
+	prometheus.MustRegister(requestDuration)
+}
 
 func main() {
 
@@ -78,6 +108,24 @@ func main() {
 
 	// ---------------- ROUTER ----------------
 	r := gin.Default()
+
+	// Middleware for Prometheus metrics
+	r.Use(func(c *gin.Context) {
+		start := time.Now()
+		c.Next()
+		duration := time.Since(start).Seconds()
+		status := strconv.Itoa(c.Writer.Status())
+		httpRequestsTotal.WithLabelValues(c.FullPath(), status).Inc()
+		requestDuration.WithLabelValues(c.FullPath()).Observe(duration)
+	})
+
+	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status":  "ok",
+			"service": "interaction-service",
+		})
+	})
 
 	r.POST("/swipe", h.Swipe)
 	r.GET("/swipes/:swipeId", h.GetSwipe)

@@ -1,0 +1,28 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'auth-domain'
+    static_configs:
+      - targets: ['resonance-auth:8080']
+  
+  - job_name: 'user-domain'
+    static_configs:
+      - targets: ['resonance-user:8081']
+  
+  - job_name: 'chat-domain'
+    static_configs:
+      - targets: ['resonance-chat:8082']
+
+  - job_name: 'music-domain'
+    static_configs:
+      - targets: ['resonance-music:8083']
+
+  - job_name: 'interaction-domain'
+    static_configs:
+      - targets: ['resonance-interaction:8084']
+
+  - job_name: 'match-domain'
+    static_configs:
+      - targets: ['resonance-match:8085']
+
