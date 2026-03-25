@@ -32,6 +32,10 @@ func (h *Handler) GetTrackByID(c *gin.Context) {
 	id := c.Param("id")
 	track, err := h.service.GetTrackByID(c.Request.Context(), id)
 	if err != nil {
+		if strings.Contains(strings.ToLower(err.Error()), "not found") {
+			c.JSON(http.StatusNotFound, gin.H{"success": false, "error": "Track not found"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": err.Error()})
 		return
 	}
